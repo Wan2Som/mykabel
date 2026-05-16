@@ -1,6 +1,5 @@
 "use client";
 import InvestorAnalytics from '../components/InvestorAnalytics';
-import RoadmapTracker from '../components/RoadmapTracker';
 import LaunchStatus from '../components/LaunchStatus';
 import Sidebar from '../components/Sidebar';
 import ProfileView from '../components/ProfileView';
@@ -140,14 +139,15 @@ const handleApplyToOpportunity = async (opportunity) => {
     setActiveApplications(updatedApps);
 
     // 3. Save it to Firebase so it remembers on refresh
+    // Save choice to database silently
     if (auth.currentUser) {
       await setDoc(doc(db, "smes", auth.currentUser.uid), {
         activeApplications: updatedApps
-      }, { merge: true }); // Merge ensures we don't overwrite their profile
+      }, { merge: true });
     }
 
-    // 4. Auto-route them to the next logical step
-    setActiveTab(smeProfile?.isRegistered ? 'launch' : 'roadmap');
+    // Auto-route straight to Analytics so they can see their odds immediately!
+    setActiveTab('analytics');
   };
   const handleLogout = async () => {
     try {
@@ -186,12 +186,29 @@ const handleApplyToOpportunity = async (opportunity) => {
               userName={userName} 
               metrics={metrics} 
               recommendations={recommendations} 
-              smeProfile={smeProfile} 
+              smeProfile={smeProfile}
               onApply={handleApplyToOpportunity} 
               onNavigateToChat={() => setActiveTab('chatbot')}
               onNavigateToOnboarding={() => setActiveTab('ai-matching')}
-              onNavigateToNextStep={() => setActiveTab(smeProfile?.isRegistered ? 'launch' : 'roadmap')} 
+              onNavigateToNextStep={() => setActiveTab('launch')} 
+              onNavigateToAnalytics={() => setActiveTab('analytics')}
             />
+          )}
+
+          {activeTab === 'ai-matching' && (
+            <div className="space-y-6 animate-in fade-in duration-400">
+              <StartupIntakeForm onSubmitSuccess={handleFormSubmissionComplete} />
+            </div>
+          )}
+
+          {activeTab === 'chatbot' && <ChatbotView smeProfile={smeProfile} />}
+
+          {/* Note: The old roadmap block is completely deleted from here! */}
+
+          {activeTab === 'launch' && <LaunchStatus activeApplications={activeApplications} />}
+
+          {activeTab === 'analytics' && (
+            <InvestorAnalytics activeApplications={activeApplications} />
           )}
 
           {activeTab === 'ai-matching' && (
