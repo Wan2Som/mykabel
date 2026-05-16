@@ -148,7 +148,9 @@ export default function Dashboard() {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
         {/* Dynamic Margin spacing offsets content layout so sidebar does not overlap fixed components */}
+        {/* Dynamic Margin spacing offsets content layout so sidebar does not overlap fixed components */}
         <main className="flex-1 h-screen overflow-y-auto custom-scrollbar relative z-10 pl-72 pr-12 py-12">
+          
           {activeTab === 'profile' && (
             <ProfileView 
               userName={userName} 
@@ -165,7 +167,17 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* This is where Chatbot currently sits */}
           {activeTab === 'chatbot' && <ChatbotView smeProfile={smeProfile} />}
+
+          {/* 👇 ADD YOUR NEW TABS RIGHT HERE BELOW CHATBOT 👇 */}
+          
+          {activeTab === 'roadmap' && (
+            <RoadmapTracker onCompleteRoadmap={() => setActiveTab('launch')} />
+          )}
+
+          {activeTab === 'launch' && <LaunchStatus />}
+
         </main>
       </div>
 
