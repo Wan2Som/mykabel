@@ -89,6 +89,7 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
                     >
                       Read Institutional Guidelines & FAQ
                     </a>
+                  </div>      
                 </div>
               );
             })}
