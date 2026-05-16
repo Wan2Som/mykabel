@@ -210,8 +210,8 @@ export default function Dashboard() {
                 </h3>
 
                 {recommendations.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {recommendations.map((rec, index) => {
+                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {recommendations.map((rec, index) => {
                       const scoreInt = parseInt(rec.matchScore) || 90;
                       return (
                         <div key={index} className="bg-slate-900/40 border border-white/5 hover:border-amber-500/20 rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between group">
