@@ -15,9 +15,13 @@ export async function POST(request) {
       - Funding Target Window: RM ${fundingNeededMin}K to RM ${fundingNeededMax}K
       - Seeking Channels: ${lookingFor.join(', ')}
 
-      Based on this data, generate exactly 2 highly relevant, realistic entities in the Malaysian venture/SME ecosystem (choose from well-known Malaysian VCs, angel networks, MDEC/Cradle grants, accelerators, or corporate partners like Gobi Partners, Cradle Fund, Artem Ventures, NEXEA, Sunway iLabs, MTDC, MRANTI, or pitchIN).
+      Based on this data, generate exactly 7 highly relevant, unique, and realistic entities in the Malaysian venture/SME ecosystem. 
+      Mix them across appropriate categories based on what the user is looking for. Choose from prominent ecosystem players such as:
+      Gobi Partners, Cradle Fund, Artem Ventures, NEXEA, Sunway iLabs, MTDC, MRANTI, pitchIN, 1337 Ventures, ScaleUp Malaysia, MDEC grants, WatchTower and Friends, Alpha Startups, or relevant Malaysian corporate VC arms.
 
-      CRITICAL: You must return ONLY a raw, valid JSON object matching the schema below. Do not wrap it in markdown code blocks (like \`\`\`json), do not include any conversational prose.
+      CRITICAL FOR LATENCY: Keep the "explanation" for each match extremely concise (under 25 words max) so the response generates instantly without timing out the server.
+
+      Return ONLY a raw, valid JSON object matching the schema below. Do not wrap it in markdown code blocks.
 
       Required JSON Response Schema Format:
       {
@@ -27,12 +31,12 @@ export async function POST(request) {
         "recommendations": [
           {
             "name": "Name of Entity",
-            "type": "Investor",
+            "type": "Investor" or "Mentor" or "Government Grants" or "Strategic Partnerships",
             "matchScore": "95%",
             "focus": "Keywords of what they focus on",
             "stage": "Stages they support",
             "ticketSize": "Funding ranges or capital metrics they deploy",
-            "explanation": "A direct, concise 1-2 sentence explanation detailing why this specific entity matches the user's startup data inputs."
+            "explanation": "Snappy 1-sentence explanation matching their specific criteria."
           }
         ]
       }
@@ -43,7 +47,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "Missing backend system deployment key." }, { status: 500 });
     }
 
-    // 👇 UPGRADED TARGET STRINGS TO MATCH THE ACTIVE MODEL GENERATION ENDPOINTS 👇
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
