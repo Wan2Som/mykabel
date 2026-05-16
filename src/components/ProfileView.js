@@ -83,7 +83,7 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
                       onClick={() => onApply(rec)}
                       className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center py-2.5 rounded-xl text-xs tracking-wide shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-2"
                     >
-                      <span>Add to Launch Board</span>
+                      <span>Save & Predict Odds</span>
                       <span>+</span>
                     </button>
                     <a href={rec.faqUrl || "#"} target="_blank" rel="noopener noreferrer"
