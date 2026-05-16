@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile'); 
   const [userName, setUserName] = useState('Founder'); 
+  const [smeProfile, setSmeProfile] = useState(null);
   
   const [metrics, setMetrics] = useState({ matches: 0, opportunities: 0, connections: 0 });
   const [recommendations, setRecommendations] = useState([]);
@@ -44,6 +45,7 @@ export default function Dashboard() {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
+            setSmeProfile(data);
             setMetrics(data.metrics || { matches: 24, opportunities: 19, connections: 4 });
             setRecommendations(data.recommendations || []);
             if (data.founderName) nameToSet = data.founderName;
@@ -95,6 +97,12 @@ export default function Dashboard() {
         recommendations: newRecs,
         userId: user.uid,
         createdAt: new Date()
+      });
+
+      setSmeProfile({
+        ...submittedData,
+        metrics: newMetrics,
+        recommendations: newRecs
       });
 
       setMetrics(newMetrics);
@@ -155,7 +163,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {activeTab === 'chatbot' && <ChatbotView />}
+          {activeTab === 'chatbot' && <ChatbotView smeProfile={smeProfile} />}
         </main>
       </div>
 
