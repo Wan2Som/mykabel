@@ -8,7 +8,6 @@ export default function InvestorAnalytics({ activeApplications = [] }) {
   const baseBurnRate = 12000; // RM 12,000 operational cash burn per month
   const currentCash = 35000;  // RM 35,000 remaining cash in bank
 
-  // Helper to parse numerical values from string ticket sizes (e.g., "RM 150K" -> 150000)
   const parseTicketSize = (sizeStr) => {
     if (!sizeStr) return 100000;
     const cleanNum = parseInt(sizeStr.replace(/[^0-9]/g, ''));
