@@ -46,7 +46,7 @@ export default function RoadmapTracker({ onCompleteRoadmap }) {
       
       {/* Header & Progress Bar */}
       <div className="bg-slate-900/40 border border-white/5 p-8 rounded-3xl backdrop-blur-xl shadow-2xl">
-        <h2 className="text-2xl font-black text-white tracking-tight mb-2">Pre-Flight Checklist 🚀</h2>
+        <h2 className="text-2xl font-black text-white tracking-tight mb-2">Prerequisites Roadmap 🚀</h2>
         <p className="text-sm text-slate-400 mb-6">Complete these mandatory legal frameworks to unlock institutional applications.</p>
         
         <div className="relative h-4 bg-slate-950 rounded-full overflow-hidden border border-slate-800 shadow-inner">
