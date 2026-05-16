@@ -1,10 +1,10 @@
 "use client";
-import InvestorAnalytics from '../components/InvestorAnalytics';
-import LaunchStatus from '../components/LaunchStatus';
 import Sidebar from '../components/Sidebar';
 import ProfileView from '../components/ProfileView';
 import ChatbotView from '../components/ChatbotView';
 import StartupIntakeForm from '../components/StartupIntakeForm';
+import RoadmapTracker from '../components/RoadmapTracker';
+import InvestorAnalytics from '../components/InvestorAnalytics';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
