@@ -3,10 +3,11 @@
 import React from 'react';
 
 export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
-  const tabs = [
+const tabs = [
     { id: 'profile', label: 'My Profile' },
     { id: 'ai-matching', label: 'AI Matching' },
-    { id: 'chatbot', label: 'AI Chatbot' } // New navigation link option mapped cleanly
+    { id: 'opportunities', label: 'Launch Status' }, // 💡 Renamed to map our progress architecture
+    { id: 'chatbot', label: 'AI Chatbot' }
   ];
 
   return (
