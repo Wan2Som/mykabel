@@ -181,9 +181,9 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans overflow-hidden relative selection:bg-cyan-500/30">
       
-      {/* Light Trail */}
+      {/* Light Trail (Cursor Sized) */}
       <div 
-        className="pointer-events-none fixed top-0 left-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 ease-out z-0"
+        className="pointer-events-none fixed top-0 left-0 w-6 h-6 bg-cyan-400/80 rounded-full blur-[6px] transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 ease-out z-50"
         style={{ top: mousePos.y, left: mousePos.x }}
       />
 
