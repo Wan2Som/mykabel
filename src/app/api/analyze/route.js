@@ -5,7 +5,7 @@ export async function POST(request) {
     const body = await request.json();
     const { startupName, sector, stage, teamSize, fundingNeededMin, fundingNeededMax, lookingFor } = body;
 
-    const prompt = `
+   const prompt = `
       You are the core intelligence matching routing module for "MyKabel", an enterprise SME matching engine in Malaysia.
       Analyze the following startup profile telemetry:
       - Startup Name: ${startupName}
@@ -18,7 +18,11 @@ export async function POST(request) {
       Based on this data, generate exactly 7 highly relevant, unique, and realistic entities in the Malaysian venture/SME ecosystem. 
       Mix them across appropriate categories (choose from Gobi Partners, Cradle Fund, Artem Ventures, NEXEA, Sunway iLabs, MTDC, MRANTI, pitchIN, 1337 Ventures, ScaleUp Malaysia, or MDEC grants).
 
-      CRITICAL: For each matched entity, you must provide accurate URL strings corresponding to their live registration portals and informational FAQ pages. Use these exact domain routes where applicable:
+      CRITICAL METRICS INSTRUCTIONS:
+      - "opportunitiesCount": Generate a realistic integer (between 8 and 45) representing the estimated total active programs/grants available in Malaysia for this specific sector.
+      - "connectionsCount": Generate a realistic integer (between 1 and 6) representing immediate warm lead potential.
+
+      CRITICAL LINK INSTRUCTIONS: For each matched entity, you must provide accurate URL strings corresponding to their live registration portals and informational FAQ pages. Use these exact domain routes where applicable:
       - Cradle Fund: portalUrl "https://cradle.com.my/cip-spark/" | faqUrl "https://cradle.com.my/cip-spark/"
       - 1337 Ventures: portalUrl "https://1337.ventures/" | faqUrl "https://1337.ventures/10-questions-vcs-will-ask-and-how-to-answer-them-1337-ventures/"
       - pitchIN: portalUrl "https://www.pitchin.my/" | faqUrl "https://www.pitchin.my/equity-crowdfunding"
@@ -27,13 +31,12 @@ export async function POST(request) {
       - Sunway iLabs: portalUrl "https://innovationlabs.sunway.edu.my/accelerator/" | faqUrl "https://innovationlabs.sunway.edu.my/why-join-sunway-ilabs-super-accelerator/"
       - For others, provide their authentic corporate domain application links.
 
-      Keep the "explanation" for each match extremely concise (under 25 words max) so the response generates instantly. Do not wrap it in markdown blocks.
+      Keep the "explanation" for each match extremely concise (under 25 words max).
 
       Required JSON Response Schema Format:
       {
-        "matchesCount": 24,
-        "opportunitiesCount": 19,
-        "connectionsCount": 4,
+        "opportunitiesCount": 15,
+        "connectionsCount": 2,
         "recommendations": [
           {
             "name": "Name of Entity",
@@ -49,7 +52,6 @@ export async function POST(request) {
         ]
       }
     `;
-
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: "Missing backend system deployment key." }, { status: 500 });
