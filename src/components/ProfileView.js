@@ -54,7 +54,7 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-2xl rounded-full" />
         </div>
 
-        {/* LIVE AI-DRIVEN NEWS DASHBOARD MODULE */}
+        {/* Live AI-Driven News Wire Module */}
         <div className="lg:col-span-9 bg-slate-900/40 border border-white/5 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex justify-between items-center border-b border-slate-800/60 pb-3">
             <div>
@@ -157,19 +157,41 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
                     <p className="text-xs text-slate-500 leading-relaxed min-h-[36px] mb-4">{rec.explanation || 'No description provided.'}</p>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-2.5">
+                  {/* 👇 RECONFIGURED CAPTIONS & PORTAL ROUTERS FOR SCREENSHOT 3 👇 */}
+                  <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-3">
+                    
+                    {/* Primary Interactive Match Save Vector */}
                     <button 
                       onClick={() => onApply && onApply(rec)}
-                      className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center py-2.5 rounded-xl text-xs tracking-wide shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-2"
+                      className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center py-3 rounded-xl text-xs tracking-wide shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-2"
                     >
                       <span>Save & Predict Odds</span>
-                      <span>+</span>
+                      <span className="font-light">+</span>
                     </button>
-                    <a href={rec.faqUrl || "#"} target="_blank" rel="noopener noreferrer"
-                      className="w-full text-center text-[11px] font-bold text-slate-500 hover:text-slate-300 transition-colors py-1"
+
+                    {/* Reintroduced Official Digital Application Interface Portal Link */}
+                    <a 
+                      href={rec.faqUrl || "#"} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full bg-slate-950 hover:bg-slate-900 border border-white/5 hover:border-slate-800 text-slate-300 text-center py-3 rounded-xl text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-2 shadow-inner"
                     >
-                      Read Institutional Guidelines & FAQ
+                      <span>Visit Application Website</span>
+                      <span className="text-slate-500 font-normal">↗</span>
                     </a>
+
+                    {/* Highly Spaced Sub-Layer Institutional Support Link */}
+                    <div className="pt-1.5 text-center">
+                      <a 
+                        href={rec.faqUrl || "#"} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-bold text-slate-600 hover:text-slate-400 transition-colors uppercase tracking-wider"
+                      >
+                        Read Institutional Guidelines & FAQ
+                      </a>
+                    </div>
+
                   </div>
                 </div>
               );
