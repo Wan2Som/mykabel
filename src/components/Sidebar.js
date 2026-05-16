@@ -6,8 +6,8 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
 const tabs = [
     { id: 'profile', label: 'My Profile' },
     { id: 'ai-matching', label: 'AI Matching' },
-    { id: 'launch', label: 'Launch Status' },
-    { id: 'analytics', label: 'Predictive Analytics' },
+    { id: 'roadmap', label: 'Prerequisite Roadmap' },
+    { id: 'analytics', label: 'Analytics' },
     { id: 'chatbot', label: 'AI Chatbot' }
   ];
     
