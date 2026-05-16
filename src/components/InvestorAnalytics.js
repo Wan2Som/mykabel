@@ -6,7 +6,7 @@ export default function InvestorAnalytics({ activeApplications = [] }) {
   // Pure, deterministic business parameters
   const baseBurnRate = 12000; // RM 12,000 operational cash burn per month
   const currentCash = 35000;  // RM 35,000 remaining cash in bank
-  const currentRunway = Math.round(currentCash / baseBurnRate); // Exactly 3 Months
+  const currentRunway = Math.round(currentCash / baseBurnRate); 
 
   // Gracefully handles text strings like "RM 50K - RM 150K" to render flawless demo data
   const getRealisticFundingImpact = (name, type) => {
