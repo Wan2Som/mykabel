@@ -27,7 +27,7 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
           { label: 'Opportunities', val: metrics.opportunities },
           { label: 'Connections', val: metrics.connections }
         ].map((stat, i) => (
-          <div key={i} className="bg-slate-900/30 backdrop-blur-xl border border-white/5 rounded-2xl p-6 relative overflow-hidden group">
+          <div key={i} className="bg-slate-900/30 backdrop-blur-xl border border-white/5 rounded-2xl p-6 relative overflow-hidden group hover:border-amber-500/20 transition-all">
             <span className="text-xs font-bold uppercase text-slate-500 tracking-wider block mb-1">{stat.label}</span>
             <span className="text-4xl font-black text-white">{stat.val}</span>
           </div>
@@ -77,18 +77,20 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
                     <p className="text-xs text-slate-500 leading-relaxed min-h-[36px] mb-4">{rec.explanation}</p>
                   </div>
 
+                  {/* ACTION BUTTON WRAPPERS LINKED TO LIVE GATEWAYS */}
                   <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-2.5">
-                    <a href={rec.portalUrl || "#"} target="_blank" rel="noopener noreferrer"
-                      className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center py-2.5 rounded-xl text-xs tracking-wide shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-1"
-                    >
-                      <span>Apply Now Portal</span> ↗
-                   <button 
+                    <button 
                       onClick={() => onApply(rec)}
                       className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center py-2.5 rounded-xl text-xs tracking-wide shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-2"
                     >
                       <span>Add to Launch Board</span>
                       <span>+</span>
                     </button>
+                    <a href={rec.faqUrl || "#"} target="_blank" rel="noopener noreferrer"
+                      className="w-full text-center text-[11px] font-bold text-slate-500 hover:text-slate-300 transition-colors py-1"
+                    >
+                      Read Institutional Guidelines & FAQ
+                    </a>
                   </div>
                 </div>
               );
@@ -102,8 +104,8 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
             </button>
           </div>
         )}
-      </div>
-          {/* Massive Redirect Button to Roadmap / Launch Status */}
+
+        {/* Massive Redirect Button to Roadmap / Launch Status */}
         {recommendations.length > 0 && (
           <div className="mt-16 p-8 bg-slate-900/40 border border-amber-500/30 rounded-3xl text-center shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5 group-hover:opacity-100 transition-opacity" />
@@ -117,10 +119,12 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
               onClick={onNavigateToNextStep} 
               className="relative z-10 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-10 py-4 rounded-2xl text-base tracking-widest uppercase shadow-[0_0_40px_rgba(245,158,11,0.2)] transition-all transform hover:scale-105"
             >
-              {smeProfile?.isRegistered ? 'Go to Progress Tracker 🚀' : 'Proceed to Prerequisites Roadmap 📋'}
+              {smeProfile?.isRegistered ? 'Go to Launch Status Board 🚀' : 'Proceed to Pre-Flight Roadmap 📋'}
             </button>
           </div>
         )}
+
+      </div>
     </div>
   );
 }
