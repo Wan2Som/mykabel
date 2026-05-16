@@ -205,7 +205,10 @@ const handleApplyToOpportunity = async (opportunity) => {
           )}
 
           {activeTab === 'analytics' && (
-            <InvestorAnalytics activeApplications={activeApplications} />
+            <InvestorAnalytics 
+              activeApplications={activeApplications} 
+              smeProfile={smeProfile} 
+            />
           )}
 
           {activeTab === 'chatbot' && <ChatbotView smeProfile={smeProfile} />}
