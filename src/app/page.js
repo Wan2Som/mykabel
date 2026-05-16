@@ -46,7 +46,7 @@ export default function Dashboard() {
           if (docSnap.exists()) {
             const data = docSnap.data();
             setSmeProfile(data);
-            setMetrics(data.metrics || { matches: 24, opportunities: 19, connections: 4 });
+            setMetrics(data.metrics || { matches: 0, opportunities: 0, connections: 0 });
             setRecommendations(data.recommendations || []);
             if (data.founderName) nameToSet = data.founderName;
             setActiveTab('profile');
@@ -82,15 +82,16 @@ export default function Dashboard() {
       }
 
       const aiData = await response.json();
-      const newMetrics = {
-        matches: aiData.matchesCount || 24,
-        opportunities: aiData.opportunitiesCount || 19,
-        connections: aiData.connectionsCount || 4
-      };
       const newRecs = aiData.recommendations || [];
+      
+      // 👇 Dynamically link matches to the exact array length, and pull AI generated counts
+      const newMetrics = {
+        matches: newRecs.length, 
+        opportunities: aiData.opportunitiesCount || 0,
+        connections: aiData.connectionsCount || 0
+      };
 
-      let cleanText = JSON.stringify(newRecs); // Fallback cleanse protection node checks
-
+      let cleanText = JSON.stringify(newRecs);
       await setDoc(doc(db, "smes", user.uid), {
         ...submittedData,
         metrics: newMetrics,
