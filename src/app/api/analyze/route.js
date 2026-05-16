@@ -1,75 +1,75 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { prompt } = body;
+    const { startupName, sector, stage, teamSize, fundingNeededMin, fundingNeededMax, lookingFor } = body;
 
-    if (!prompt) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
-    }
+    const prompt = `
+      You are the core intelligence matching routing module for "MyKabel", an enterprise SME matching engine in Malaysia.
+      Analyze the following startup profile telemetry:
+      - Startup Name: ${startupName}
+      - Sector Focus: ${sector}
+      - Growth Phase Stage: ${stage}
+      - Active Team Size: ${teamSize} members
+      - Funding Target Window: RM ${fundingNeededMin}K to RM ${fundingNeededMax}K
+      - Seeking Channels: ${lookingFor.join(', ')}
 
-    // Trying the most likely 2026 standard model string
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-3-flash-preview', 
-      generationConfig: { responseMimeType: "application/json" }
-    });
+      Based on this data, generate exactly 2 highly relevant, realistic entities in the Malaysian venture/SME ecosystem (choose from well-known Malaysian VCs, angel networks, MDEC/Cradle grants, accelerators, or corporate partners like Gobi Partners, Cradle Fund, Artem Ventures, NEXEA, Sunway iLabs, MTDC, MRANTI, or pitchIN).
 
-    const systemInstruction = `
-      You are the core intelligence of DesaLink AI, a routing platform for the Malaysian SME ecosystem. 
-      Analyze the user's input describing a rural SME. 
-      
-      You MUST return your response as a valid JSON object with the exact following structure:
+      CRITICAL: You must return ONLY a raw, valid JSON object matching the schema below. Do not wrap it in markdown code blocks (like \`\`\`json), do not include any conversational prose.
+
+      Required JSON Response Schema Format:
       {
-        "maturity": "Short phrase describing digital maturity (e.g., 'Low Digital Maturity')",
-        "potential": "Short phrase describing growth/export potential",
-        "summary": "A 2-sentence summary of what this SME needs based on the query.",
+        "matchesCount": 24,
+        "opportunitiesCount": 19,
+        "connectionsCount": 4,
         "recommendations": [
           {
-            "type": "Choose one: Programme, Grant, Mentor, or Agency",
-            "name": "Name of the specific Malaysian initiative or persona",
-            "explanation": "A 1-sentence reasoning of WHY this fits based on historical context.",
-            "matchScore": "A percentage like '95%'",
-            "image": "Return this exact string: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&q=80&w=400'"
+            "name": "Name of Entity",
+            "type": "Investor",
+            "matchScore": "95%",
+            "focus": "Keywords of what they focus on",
+            "stage": "Stages they support",
+            "ticketSize": "Funding ranges or capital metrics they deploy",
+            "explanation": "A direct, concise 1-2 sentence explanation detailing why this specific entity matches the user's startup data inputs."
           }
         ]
       }
-      Provide exactly 6 recommendations in the array. Ensure a mix of Grants, Mentors, and Programmes.
     `;
 
-    const fullPrompt = `${systemInstruction}\n\nUser Query: ${prompt}`;
-    
-    const result = await model.generateContent(fullPrompt);
-    const responseText = result.response.text();
-    
-    const parsedData = JSON.parse(responseText);
-
-    return NextResponse.json(parsedData, { status: 200 });
-
-  } catch (error) {
-    console.error("🔥 Detailed Gemini API Error:", error.message || error);
-    
-    // --- THE MAGIC DEBUGGER ---
-    // If it fails, this will ask Google's servers for your EXACT allowed models
-    try {
-      console.log("\n⏳ Fetching the list of models your API key has access to...");
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
-      const data = await res.json();
-      
-      console.log("\n✅ AVAILABLE MODELS FOR YOUR KEY:");
-      const generateContentModels = data.models
-        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
-        .map(m => m.name);
-      
-      console.log(generateContentModels);
-      console.log("\n👉 Fix: Copy one of the names above (like 'models/gemini-pro') and paste it into the 'model:' field in your code!\n");
-    } catch (fetchError) {
-      console.error("Could not fetch model list.", fetchError);
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: "Missing backend system deployment key." }, { status: 500 });
     }
 
-    return NextResponse.json({ error: "Failed to analyze SME profile. Check VS Code Terminal." }, { status: 500 });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errText = await response.text();
+      return NextResponse.json({ error: "Gemini API gateway thread reject.", details: errText }, { status: response.status });
+    }
+
+    const resData = await response.json();
+    const rawAiText = resData.candidates[0].content.parts[0].text;
+    
+    const structuredOutput = JSON.parse(rawAiText.trim());
+    return NextResponse.json(structuredOutput);
+
+  } catch (error) {
+    console.error("Analytical pipeline failure:", error);
+    return NextResponse.json({ error: "Internal telemetry pipeline generation error." }, { status: 500 });
   }
 }
