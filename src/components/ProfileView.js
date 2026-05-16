@@ -105,20 +105,20 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
           </div>
         )}
 
-        {/* Massive Redirect Button to Launch Status / Analytics */}
+        {/* Massive Redirect Button to Roadmap / Analytics */}
         {recommendations.length > 0 && (
           <div className="mt-16 p-8 bg-slate-900/40 border border-amber-500/30 rounded-3xl text-center shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5 group-hover:opacity-100 transition-opacity" />
             <h3 className="text-2xl font-black text-white mb-2 relative z-10">Ready to take action?</h3>
             <p className="text-sm text-slate-400 mb-6 relative z-10">
-              Track your selected matches on the Launch Board, or run our AI model to predict your exact acceptance odds.
+              Complete your legal prerequisites, or run our AI model to predict your exact acceptance odds for your saved matches.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
               <button 
-                onClick={onNavigateToNextStep} 
+                onClick={onNavigateToRoadmap} 
                 className="bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl text-sm tracking-widest uppercase transition-all"
               >
-                View Launch Board 🚀
+                View Prerequisites 📋
               </button>
               <button 
                 onClick={onNavigateToAnalytics} 
