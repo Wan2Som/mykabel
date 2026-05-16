@@ -10,6 +10,7 @@ const firebaseConfig = {
   storageBucket: "mykabel.firebasestorage.app",
   messagingSenderId: "994729582662",
   appId: "1:994729582662:web:18fb5910976764ed30aa47",
+  measurementId: "G-G758TB4P35"
 };
 
 // Initialize Firebase
