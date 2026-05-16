@@ -117,7 +117,7 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
               onClick={onNavigateToNextStep} 
               className="relative z-10 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-10 py-4 rounded-2xl text-base tracking-widest uppercase shadow-[0_0_40px_rgba(245,158,11,0.2)] transition-all transform hover:scale-105"
             >
-              {smeProfile?.isRegistered ? 'Go to Launch Status Board 🚀' : 'Proceed to Pre-Flight Roadmap 📋'}
+              {smeProfile?.isRegistered ? 'Go to Progress Tracker 🚀' : 'Proceed to Prerequisites Roadmap 📋'}
             </button>
           </div>
         )}
