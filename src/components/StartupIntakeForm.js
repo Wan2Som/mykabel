@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
-import { db, auth } from '../firebase'; // Adjust import path to match your project structure
+import { db, auth } from '../app/lib/firebaseConfig'; // Adjust import path to match your project structure
 
 export default function StartupIntakeForm({ onSubmitSuccess }) {
   const [currentStep, setCurrentStep] = useState(1);
