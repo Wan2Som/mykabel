@@ -54,6 +54,7 @@ export default function Dashboard() {
   }, [router]);
 
  // --- TRIGGER ACTION SEQUENCE ON FORM INTENT COMPLETE ---
+ // --- TRIGGER ACTION SEQUENCE ON FORM INTENT COMPLETE ---
   const handleFormSubmissionComplete = async (submittedData) => {
     setLoading(true);
     
@@ -71,7 +72,11 @@ export default function Dashboard() {
         body: JSON.stringify(submittedData),
       });
 
-      if (!response.ok) throw new Error('AI generation pipeline rejected request framework.');
+      // 👇 GRAB THE ACTUAL BACKEND ERROR IF IT FAILS 👇
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "Unknown Server Error");
+        throw new Error(`Server Status ${response.status}: ${errorText}`);
+      }
 
       const aiData = await response.json();
 
@@ -99,7 +104,8 @@ export default function Dashboard() {
 
     } catch (e) {
       console.error("Ecosystem sync compilation failed: ", e);
-      alert("AI pipeline timed out. Proceeding with database registration fallback routine.");
+      // 👇 THIS WILL NOW PRINT THE EXACT CRYPTIC ERROR CODES 👇
+      alert(`AI Pipeline Failed!\nReason: ${e.message}`);
     } finally {
       setLoading(false);
     }
