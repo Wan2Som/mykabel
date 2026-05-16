@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function ProfileView({ userName, metrics, recommendations, smeProfile, onApply, onNavigateToChat, onNavigateToOnboarding, onNavigateToNextStep, onNavigateToAnalytics }) {
+export default function ProfileView({ userName, metrics, recommendations, smeProfile, onApply, onNavigateToChat, onNavigateToOnboarding, onNavigateToRoadmap, onNavigateToAnalytics }) {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
