@@ -1,4 +1,5 @@
 "use client";
+import InvestorAnalytics from '../components/InvestorAnalytics';
 import RoadmapTracker from '../components/RoadmapTracker';
 import LaunchStatus from '../components/LaunchStatus';
 import Sidebar from '../components/Sidebar';
@@ -85,7 +86,7 @@ export default function Dashboard() {
       const aiData = await response.json();
       const newRecs = aiData.recommendations || [];
       
-      // 👇 Dynamically link matches to the exact array length, and pull AI generated counts
+      // Dynamically link matches to the exact array length, and pull AI generated counts
       const newMetrics = {
         matches: newRecs.length, 
         opportunities: aiData.opportunitiesCount || 0,
@@ -202,13 +203,17 @@ const handleApplyToOpportunity = async (opportunity) => {
           {/* This is where Chatbot currently sits */}
           {activeTab === 'chatbot' && <ChatbotView smeProfile={smeProfile} />}
 
-          {/* 👇 ADD YOUR NEW TABS RIGHT HERE BELOW CHATBOT 👇 */}
+          {/* ADD YOUR NEW TABS RIGHT HERE BELOW CHATBOT */}
           
           {activeTab === 'roadmap' && (
             <RoadmapTracker onCompleteRoadmap={() => setActiveTab('launch')} />
           )}
 
           {activeTab === 'launch' && <LaunchStatus activeApplications={activeApplications} />}
+
+          {activeTab === 'analytics' && (
+            <InvestorAnalytics activeApplications={activeApplications} />
+          )}
 
         </main>
       </div>
