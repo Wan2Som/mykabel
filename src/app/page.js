@@ -208,7 +208,7 @@ const handleApplyToOpportunity = async (opportunity) => {
             <RoadmapTracker onCompleteRoadmap={() => setActiveTab('launch')} />
           )}
 
-          {activeTab === 'launch' && <LaunchStatus />}
+          {activeTab === 'launch' && <LaunchStatus activeApplications={activeApplications} />}
 
         </main>
       </div>
