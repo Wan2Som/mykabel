@@ -6,7 +6,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from './lib/firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
-import ReactFlow, { Background, Controls, MiniMap, addEdge, applyNodeChanges, applyEdgeChanges } from 'reactflow';
+import ReactFlow, { Background, Controls, MiniMap, applyNodeChanges, applyEdgeChanges } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 // --- CUSTOM HOOK: Glow Cursor Trail ---
@@ -22,47 +22,26 @@ function useMousePosition() {
   return mousePosition;
 }
 
-// --- MOCK DATABASE (Replaces Firebase for the demo) ---
-const initialSME = {
-  id: "sme-1",
-  name: "Warisan Snack Co.",
-  location: "Kelantan",
-  industry: "Traditional Food",
-  goal: "E-commerce expansion & Halal Export",
-  dateAdded: "2026-05-16",
-  status: "Active"
-};
-
 export default function Dashboard() {
   const router = useRouter();
   const mousePos = useMousePosition();
   
-  // --- ALL HOOKS & STATES MUST LIVE AT THE TOP ---
+  // --- MASTER PANEL STATES ---
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [promptInput, setPromptInput] = useState("Traditional food SME from Kelantan looking for digitalization grants and halal export mentors.");
+  const [activeTab, setActiveTab] = useState('profile'); // Initial view defaults directly to dashboard metrics
   
-  // Data States
-  const [aiAnalysis, setAiAnalysis] = useState(null);
+  // Dynamic User Metrics Linked From Form Telemetry
+  const [metrics, setMetrics] = useState({ matches: 0, opportunities: 0, connections: 0 });
   const [recommendations, setRecommendations] = useState([]);
-  
-  // React Flow States
-  const [nodes, setNodes] = useState([
-    { 
-      id: 'sme-1', 
-      position: { x: 400, y: 300 }, 
-      data: { label: '🏢 Warisan Snack Co.' },
-      style: { background: '#06b6d4', color: '#000', border: 'none', fontWeight: 'bold', borderRadius: '8px', padding: '15px' }
-    }
-  ]);
+
+  // React Flow Network Maps Graphing States
+  const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
 
-  // React Flow Handlers
   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
-  // Firebase Auth Check
+  // Firebase Auth Check Lock Sequence
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -74,130 +53,112 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, [router]);
 
-  // --- ACTIONS ---
-  
-  // 1. Fetch AI Data
-  const triggerGeminiAnalysis = async () => {
-    if (!promptInput.trim()) return;
-    setIsAnalyzing(true);
-    setAiAnalysis(null);
-    setRecommendations([]);
-
+  // --- TRIGGER ACTION SEQUENCE ON FORM INTENT COMPLETE ---
+  const handleFormSubmissionComplete = async (submittedData) => {
+    setLoading(true);
+    
+    // Simulate generation phase linked to form metrics criteria variables
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptInput }),
-      });
-
-      if (!response.ok) throw new Error('Network response was not ok');
-
-      const data = await response.json();
-      setAiAnalysis({ maturity: data.maturity, potential: data.potential, summary: data.summary });
-      setRecommendations(data.recommendations);
-    } catch (error) {
-      console.error("Error fetching analysis:", error);
-      alert("Failed to connect to the AI Engine.");
-    } finally {
-      setIsAnalyzing(false);
-    }  
-  };
-
-  // 2. Save SME metadata to Firebase
-  const saveSMEToDatabase = async (smeData, aiResults) => {
-    try {
-      const docRef = await addDoc(collection(db, "smes"), {
-        name: smeData.name,
-        location: smeData.location,
-        needs: smeData.needs,
-        aiMatches: aiResults,
+      // 1. Log profile schema mapping securely inside firestore cloud arrays
+      await addDoc(collection(db, "smes"), {
+        ...submittedData,
         createdAt: new Date()
       });
-      console.log("SME saved to database with ID: ", docRef.id);
+
+      // 2. Set structural mock data dashboard nodes matching screenshot specifications
+      setMetrics({ matches: 24, opportunities: 19, connections: 4 });
+      
+      setRecommendations([
+        {
+          name: "GrowthFund Capital",
+          type: "Investor",
+          matchScore: "94%",
+          focus: `AI, SaaS, ${submittedData.sector}`,
+          stage: submittedData.stage,
+          ticketSize: `RM ${submittedData.fundingNeededMin || '100'}K – RM ${submittedData.fundingNeededMax || '2'}M`,
+          explanation: `Matches targeting ${submittedData.sector} groups inside Malaysia looking for early venture scaling support frameworks.`
+        },
+        {
+          name: "NEXUS Accelerator Node",
+          type: "Strategic Partnerships",
+          matchScore: "89%",
+          focus: `${submittedData.sector}, Digitalization`,
+          stage: "MVP & Scaling",
+          ticketSize: "Non-equity Market Access",
+          explanation: "Provides instant digital pilot integration pathways for high-growth enterprises."
+        }
+      ]);
+
+      // Initialize Core Ecosystem Node Matrix mapping coordinates
+      setNodes([
+        { 
+          id: 'sme-core', 
+          position: { x: 400, y: 300 }, 
+          data: { label: `🏢 ${submittedData.startupName || 'Warisan Snack Co.'}` },
+          style: { background: '#F59E0B', color: '#000', border: 'none', fontWeight: 'bold', borderRadius: '8px', padding: '15px' }
+        }
+      ]);
+
+      // Pivot layout focal point directly back to Profile Tab dashboard view module grid
+      setActiveTab('profile');
+
     } catch (e) {
-      console.error("Error adding document: ", e);
+      console.error("Firestore submission write thread failed: ", e);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // 3. Add to Graph Function
-  const handleAddToGraph = (rec) => {
-    const newNodeId = `node-${rec.name.replace(/\s+/g, '-').toLowerCase()}`;
-    
-    if (nodes.find(n => n.id === newNodeId)) {
-      alert(`${rec.name} is already in the graph!`);
-      return;
-    }
-
-    let nodeColor = '#3b82f6'; 
-    if (rec.type === 'Grant') nodeColor = '#10b981'; 
-    if (rec.type === 'Programme') nodeColor = '#8b5cf6'; 
-
-    const newNode = {
-      id: newNodeId,
-      position: { x: Math.random() * 600 + 100, y: Math.random() * 400 + 50 }, 
-      data: { label: `${rec.type}: ${rec.name}` },
-      style: { background: nodeColor, color: '#fff', border: 'none', borderRadius: '8px', padding: '10px' }
-    };
-    
-    const newEdge = {
-      id: `edge-sme1-${newNodeId}`,
-      source: 'sme-1',
-      target: newNodeId,
-      animated: true,
-      style: { stroke: nodeColor, strokeWidth: 2 }
-    };
-
-    setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [...eds, newEdge]);
-    setActiveTab('graph');
-  };
-
-  // 4. Handle Sign Out
   const handleLogout = async () => {
     try {
       await signOut(auth);
       router.push('/login');
     } catch (error) {
-      console.error("Error signing out: ", error);
+      console.error("Signout instance termination failure: ", error);
     }
   }; 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-cyan-500 animate-pulse text-xl font-bold">Verifying MyKabel Access...</div>
+      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center">
+        <div className="text-amber-500 animate-pulse text-xl font-bold tracking-widest uppercase">Syncing Cloud Matrix...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans overflow-hidden relative selection:bg-cyan-500/30">
+    <div className="min-h-screen bg-[#0B1120] text-slate-300 font-sans overflow-hidden relative selection:bg-amber-500/30">
       
-      {/* Light Trail */}
+      {/* Light Trail Core Tracker */}
       <div 
-        className="pointer-events-none fixed top-0 left-0 w-6 h-6 bg-cyan-400/80 rounded-full blur-[6px] transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 ease-out z-50"
+        className="pointer-events-none fixed top-0 left-0 w-6 h-6 bg-amber-500/80 rounded-full blur-[6px] transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 ease-out z-50"
         style={{ top: mousePos.y, left: mousePos.x }}
       />
 
       <div className="flex relative z-10 min-h-screen">
-        {/* Sidebar */}
-        <aside className="w-64 bg-zinc-900/50 backdrop-blur-xl border-r border-zinc-800/50 p-6 flex flex-col z-20">
-          <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-10 tracking-tight">
-            MyKabel
-          </h1>
-          <nav className="space-y-2 flex-1">
+        
+        {/* --- SIDEBAR PANEL ARCHITECTURE --- */}
+        <aside className="w-64 bg-slate-900/40 backdrop-blur-xl border-r border-white/10 p-6 flex flex-col z-20">
+          <div className="mb-10 px-4">
+            <h1 className="text-2xl font-black text-white tracking-tighter">
+              MyKabel<span className="text-amber-500 animate-pulse">|</span>
+            </h1>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Ecosystem Matrix Router</p>
+          </div>
+          
+          <nav className="space-y-1.5 flex-1">
             {[
-              { id: 'dashboard', label: 'Ecosystem Engine' },
-              { id: 'intakes', label: 'SME Database' },
+              { id: 'profile', label: 'My Profile' },
+              { id: 'ai-matching', label: 'AI Matching' },
               { id: 'graph', label: 'Relationship Graph' }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 font-medium ${
+                className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold ${
                   activeTab === tab.id 
-                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]' 
-                    : 'text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300'
+                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.08)]' 
+                    : 'text-slate-500 hover:bg-slate-800/40 hover:text-slate-300'
                 }`}
               >
                 {tab.label}
@@ -207,199 +168,156 @@ export default function Dashboard() {
 
           <button
             onClick={handleLogout}
-            className="w-full mt-auto px-4 py-3 rounded-lg text-left text-sm font-medium text-red-400/70 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-all"
+            className="w-full mt-auto px-4 py-3 rounded-xl text-left text-xs font-bold uppercase tracking-wider text-red-400/60 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/10 transition-all"
           >
             🚪 Sign Out
           </button>
         </aside>
 
-        {/* Main Content Area */}
-        <main className="flex-1 h-screen overflow-y-auto custom-scrollbar relative z-10">
+        {/* --- MAIN INTERFACE FRAME MODULE --- */}
+        <main className="flex-1 h-screen overflow-y-auto custom-scrollbar relative z-10 p-8 lg:p-12">
           
-          {/* TAB: DASHBOARD */}
-          <div className={`p-8 lg:p-12 ${activeTab === 'dashboard' ? 'block' : 'hidden'}`}>
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <header className="mb-10">
-                <h2 className="text-4xl font-bold text-white mb-2">Intelligence Hub</h2>
-                <p className="text-zinc-500">Route SMEs instantly using Gemini AI context awareness.</p>
+          {/* TAB 1: DASHBOARD DISPLAYS & METRICS OVERVIEW */}
+          {activeTab === 'profile' && (
+            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <header>
+                <h2 className="text-3xl font-black text-white tracking-tight mb-1">Welcome back, SME FOUNDER 👋</h2>
+                <p className="text-sm text-slate-500 font-medium">Real-time status analysis telemetry loops.</p>
               </header>
 
-              <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 mb-8 shadow-xl">
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Custom AI Prompt (Describe the SME)</label>
-                  <div className="relative">
-                    <textarea 
-                      rows="2"
-                      value={promptInput}
-                      onChange={(e) => setPromptInput(e.target.value)}
-                      placeholder="Describe the business, location, and goals..."
-                      className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none shadow-inner"
-                    />
-                    <button 
-                      onClick={triggerGeminiAnalysis}
-                      disabled={isAnalyzing || !promptInput}
-                      className="absolute bottom-3 right-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium py-1.5 px-4 rounded-md transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50"
-                    >
-                      {isAnalyzing ? "Processing..." : "Generate Routing"}
-                    </button>
+              {/* Data Dashboard Grid Indicators */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { label: 'Total Matches', val: metrics.matches },
+                  { label: 'Opportunities', val: metrics.opportunities },
+                  { label: 'Connections', val: metrics.connections }
+                ].map((stat, i) => (
+                  <div key={i} className="bg-slate-900/30 backdrop-blur-xl border border-white/5 rounded-2xl p-6 relative overflow-hidden group hover:border-amber-500/20 transition-all">
+                    <span className="text-xs font-bold uppercase text-slate-500 tracking-wider block mb-1">{stat.label}</span>
+                    <span className="text-4xl font-black text-white">{stat.val}</span>
+                    <div className="w-24 h-8 bg-gradient-to-r from-amber-500/0 to-amber-500/10 absolute bottom-0 right-0 transform skew-x-12 translate-y-2 group-hover:translate-x-1 transition-transform" />
                   </div>
-                </div>
+                ))}
               </div>
 
-              {aiAnalysis && (
-                <div className="bg-gradient-to-br from-cyan-950/30 to-blue-900/10 border border-cyan-900/50 rounded-2xl p-6 mb-8 animate-in fade-in duration-700">
-                  <div className="flex gap-3 mb-4">
-                    <span className="px-3 py-1 bg-zinc-950 border border-cyan-800/50 text-cyan-400 rounded-full text-xs font-bold uppercase tracking-wide">
-                      {aiAnalysis.maturity}
-                    </span>
-                    <span className="px-3 py-1 bg-zinc-950 border border-emerald-800/50 text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wide">
-                      {aiAnalysis.potential}
-                    </span>
-                  </div>
-                  <p className="text-cyan-100/80 leading-relaxed text-lg">
-                    {aiAnalysis.summary}
-                  </p>
-                </div>
-              )}
+              {/* AI Recommendations Module Lists */}
+              <div>
+                <h3 className="text-lg font-bold text-white mb-6 tracking-tight flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  AI Recommended Matches
+                </h3>
 
-              {recommendations.length > 0 && (
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
-                    Optimized Pathways ({recommendations.length} Matches)
-                  </h3>
-                  
-                  {/* --- OVERHAULED PREMIUM MATCH CARD GRID --- */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recommendations.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {recommendations.map((rec, index) => {
-                      // Strip percentage sign if it exists in data to use cleanly in formula
-                      const scoreNum = parseInt(rec.matchScore) || 90;
-                      
+                      const scoreInt = parseInt(rec.matchScore) || 90;
                       return (
-                        <div key={index} className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800 hover:border-cyan-500/30 hover:bg-zinc-800/30 transition-all duration-300 flex flex-col justify-between relative group shadow-xl">
+                        <div key={index} className="bg-slate-900/40 border border-white/5 hover:border-amber-500/20 rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between group">
                           <div>
-                            {/* Card Header Row */}
-                            <div className="flex justify-between items-start mb-5">
+                            <div className="flex justify-between items-start mb-4">
                               <div className="flex items-center gap-3">
-                                {/* Gradient Initial Logo Emblem */}
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-black text-lg shadow-inner uppercase">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-slate-950 font-black text-lg shadow-inner">
                                   {rec.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <h4 className="text-base font-bold text-white tracking-tight group-hover:text-cyan-400 transition-colors line-clamp-1">
-                                    {rec.name}
-                                  </h4>
-                                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider bg-cyan-950/60 border border-cyan-900/50 px-2 py-0.5 rounded">
-                                    {rec.type}
-                                  </span>
+                                  <h4 className="font-bold text-white text-base tracking-tight line-clamp-1">{rec.name}</h4>
+                                  <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded uppercase tracking-wider">{rec.type}</span>
                                 </div>
                               </div>
 
-                              {/* Circular AI Matching Progress Circle */}
-                              <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
+                              {/* Progress Dial Match Engine Tracker */}
+                              <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
                                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                  <path className="text-zinc-800" strokeWidth="3px" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                  <path className="text-cyan-500 transition-all duration-500" strokeDasharray={`${scoreNum}, 100`} strokeWidth="3px" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                  <path className="text-slate-800" strokeWidth="3px" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                  <path className="text-amber-500" strokeDasharray={`${scoreInt}, 100`} strokeWidth="3px" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                                 </svg>
-                                <span className="absolute text-[11px] font-black text-zinc-200">{scoreNum}%</span>
+                                <span className="absolute text-[10px] font-black text-zinc-100">{scoreInt}%</span>
                               </div>
                             </div>
 
-                            {/* Inside Context Box */}
-                            <div className="bg-zinc-950/60 p-4 rounded-xl border border-zinc-800/80 text-xs text-zinc-400 leading-relaxed mb-4 min-h-[72px]">
-                              {rec.explanation}
+                            <div className="space-y-1.5 text-xs text-slate-400 mb-4 border-t border-b border-slate-800/50 py-3 my-3">
+                              <div><span className="font-bold text-slate-500 inline-block w-24">Sector Focus:</span> {rec.focus}</div>
+                              <div><span className="font-bold text-slate-500 inline-block w-24">Stage Criteria:</span> {rec.stage}</div>
+                              <div><span className="font-bold text-slate-500 inline-block w-24">Ticket Limits:</span> <span className="text-emerald-400 font-semibold">{rec.ticketSize}</span></div>
                             </div>
+
+                            <p className="text-xs text-slate-500 leading-relaxed min-h-[36px]">{rec.explanation}</p>
                           </div>
 
-                          {/* Interactive Connect Blueprint Trigger */}
                           <button 
-                            onClick={() => handleAddToGraph(rec)}
-                            className="text-xs font-semibold text-zinc-400 hover:text-cyan-400 transition-colors w-full pt-3 border-t border-zinc-800/60 flex items-center justify-between"
+                            onClick={() => {
+                              const newNodeId = `node-${rec.name.replace(/\s+/g, '-').toLowerCase()}`;
+                              if (nodes.find(n => n.id === newNodeId)) return alert("Already matched inside graph matrix.");
+                              
+                              const targetNode = {
+                                id: newNodeId,
+                                position: { x: Math.random() * 500 + 200, y: Math.random() * 300 + 100 },
+                                data: { label: `${rec.type}: ${rec.name}` },
+                                style: { background: '#1E293B', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', padding: '10px' }
+                              };
+                              const edgeNode = {
+                                id: `edge-core-${newNodeId}`,
+                                source: 'sme-core',
+                                target: newNodeId,
+                                animated: true,
+                                style: { stroke: '#F59E0B', strokeWidth: 1.5 }
+                              };
+                              setNodes(nds => [...nds, targetNode]);
+                              setEdges(eds => [...eds, edgeNode]);
+                              setActiveTab('graph');
+                            }}
+                            className="w-full pt-3 mt-4 border-t border-slate-800 text-xs font-bold text-slate-400 hover:text-amber-500 transition-colors flex items-center justify-between"
                           >
-                            <span>Map Into Ecosystem</span>
+                            <span>Map and Connect Ecosystem Blueprint</span>
                             <span className="transform group-hover:translate-x-1 transition-transform">→</span>
                           </button>
                         </div>
                       );
                     })}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="bg-slate-900/20 border border-dashed border-slate-800 rounded-2xl p-12 text-center">
+                    <p className="text-sm text-slate-500 font-medium mb-4">No match data detected. Onboard your business parameters.</p>
+                    <button onClick={() => setActiveTab('ai-matching')} className="bg-amber-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-amber-400 transition-all">
+                      Initialize Onboarding Wizard
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* TAB: SME INTAKES */}
-          <div className={`p-8 lg:p-12 h-full ${activeTab === 'intakes' ? 'block' : 'hidden'}`}>
-             <div className="animate-in fade-in duration-500 h-full flex flex-col gap-10">
-               <div>
-                 <h2 className="text-4xl font-bold text-white mb-2">SME Onboarding</h2>
-                 <p className="text-zinc-500">Register and manage ecosystems using structured matching profiles.</p>
-               </div>
+          {/* TAB 2: FUNCTIONAL MULTI-STEP DARK FORM REGISTRATION MODULE */}
+          {activeTab === 'ai-matching' && (
+            <div className="space-y-6 animate-in fade-in duration-400">
+              <StartupIntakeForm onSubmitSuccess={handleFormSubmissionComplete} />
+            </div>
+          )}
 
-               {/* --- RENDER THE NEW LIGHT MODE INTAKE FORM WIZARD --- */}
-               <div className="theme-light-wrapper">
-                 <StartupIntakeForm />
-               </div>
-               
-               {/* Saved Records Data Ledger */}
-               <div>
-                 <h3 className="text-xl font-bold text-white mb-4">Historical Records</h3>
-                 <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
-                   <table className="w-full text-left text-sm text-zinc-400">
-                     <thead className="bg-zinc-950 text-xs uppercase text-zinc-500 border-b border-zinc-800">
-                       <tr>
-                         <th className="px-6 py-4 font-semibold">Business Name</th>
-                         <th className="px-6 py-4 font-semibold">Location</th>
-                         <th className="px-6 py-4 font-semibold">Industry</th>
-                         <th className="px-6 py-4 font-semibold">Status</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                         <td className="px-6 py-4 font-medium text-white">{initialSME.name}</td>
-                         <td className="px-6 py-4">{initialSME.location}</td>
-                         <td className="px-6 py-4">{initialSME.industry}</td>
-                         <td className="px-6 py-4"><span className="bg-emerald-900/30 text-emerald-400 px-2 py-1 rounded text-xs">Active</span></td>
-                       </tr>
-                       <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                         <td className="px-6 py-4 font-medium text-white">Desa Tech Craft</td>
-                         <td className="px-6 py-4">Pahang</td>
-                         <td className="px-6 py-4">Handicrafts</td>
-                         <td className="px-6 py-4"><span className="bg-zinc-800 text-zinc-400 px-2 py-1 rounded text-xs">Matched</span></td>
-                       </tr>
-                     </tbody>
-                   </table>
-                 </div>
-               </div>
-
-             </div>
-          </div>
-
-          {/* TAB: RELATIONSHIP GRAPH */}
+          {/* TAB 3: RELATIONSHIP WORKSPACE NETWORK VIRTUALIZER */}
           {activeTab === 'graph' && (
              <div className="h-full w-full flex flex-col relative animate-in fade-in duration-500">
-               <div className="absolute top-8 left-8 z-20 pointer-events-none">
-                  <h2 className="text-4xl font-bold text-white drop-shadow-lg">Ecosystem Visualizer</h2>
-                  <p className="text-zinc-400 drop-shadow-md">Drag to pan, scroll to zoom.</p>
+               <div className="absolute top-0 left-0 z-20 pointer-events-none">
+                  <h2 className="text-3xl font-black text-white drop-shadow-lg mb-1">Ecosystem Visualizer</h2>
+                  <p className="text-xs text-slate-500 font-medium drop-shadow-md">Scroll to zoom workspace viewports.</p>
                </div>
                
-               <div className="flex-1 w-full bg-zinc-950 h-screen">
-                  <ReactFlow
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    fitView
-                    className="dark-theme-graph"
-                  >
-                    <Background color="#27272a" gap={16} size={1} />
-                    <Controls className="bg-zinc-900 border-zinc-800 fill-zinc-400" />
-                    <MiniMap 
-                      nodeColor={(node) => node.style?.background || '#333'} 
-                      maskColor="rgba(0,0,0,0.7)"
-                      className="bg-zinc-900 border-zinc-800"
-                    />
-                  </ReactFlow>
+               <div className="flex-1 w-full bg-[#0B1120] h-[75vh] border border-white/5 rounded-2xl overflow-hidden mt-10 shadow-2xl">
+                  {nodes.length > 0 ? (
+                    <ReactFlow
+                      nodes={nodes}
+                      edges={edges}
+                      onNodesChange={onNodesChange}
+                      onEdgesChange={onEdgesChange}
+                      fitView
+                    >
+                      <Background color="#1E293B" gap={16} size={1} />
+                    </ReactFlow>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-xs font-medium text-slate-600 italic">
+                      Ecosystem nodes empty. Complete onboarding mapping queries first.
+                    </div>
+                  )}
                </div>
              </div>
           )}
@@ -408,14 +326,10 @@ export default function Dashboard() {
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
-        /* React Flow Dark Mode Fixes */
-        .react-flow__panel { background: #18181b; border: 1px solid #27272a; border-radius: 8px; overflow: hidden; }
-        .react-flow__controls-button { background: #18181b; border-bottom: 1px solid #27272a; fill: #a1a1aa; }
-        .react-flow__controls-button:hover { background: #27272a; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0B1120; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
       `}} />
     </div>
   );
