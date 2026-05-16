@@ -1,5 +1,6 @@
 "use client";
 
+import StartupIntakeForm from '../components/StartupIntakeForm';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -65,10 +66,8 @@ export default function Dashboard() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
-        // No user found, send them to the login page
         router.push('/login');
       } else {
-        // User exists, stay on dashboard
         setLoading(false);
       }
     });
@@ -124,26 +123,22 @@ export default function Dashboard() {
   const handleAddToGraph = (rec) => {
     const newNodeId = `node-${rec.name.replace(/\s+/g, '-').toLowerCase()}`;
     
-    // Prevent duplicates
     if (nodes.find(n => n.id === newNodeId)) {
       alert(`${rec.name} is already in the graph!`);
       return;
     }
 
-    // Determine colors based on type
-    let nodeColor = '#3b82f6'; // blue for mentors
-    if (rec.type === 'Grant') nodeColor = '#10b981'; // green
-    if (rec.type === 'Programme') nodeColor = '#8b5cf6'; // purple
+    let nodeColor = '#3b82f6'; 
+    if (rec.type === 'Grant') nodeColor = '#10b981'; 
+    if (rec.type === 'Programme') nodeColor = '#8b5cf6'; 
 
-    // Add Node
     const newNode = {
       id: newNodeId,
-      position: { x: Math.random() * 600 + 100, y: Math.random() * 400 + 50 }, // Random spawn
+      position: { x: Math.random() * 600 + 100, y: Math.random() * 400 + 50 }, 
       data: { label: `${rec.type}: ${rec.name}` },
       style: { background: nodeColor, color: '#fff', border: 'none', borderRadius: '8px', padding: '10px' }
     };
     
-    // Add Edge connecting SME to new Node
     const newEdge = {
       id: `edge-sme1-${newNodeId}`,
       source: 'sme-1',
@@ -154,8 +149,6 @@ export default function Dashboard() {
 
     setNodes((nds) => [...nds, newNode]);
     setEdges((eds) => [...eds, newEdge]);
-    
-    // Switch to Graph Tab to show the magic
     setActiveTab('graph');
   };
 
@@ -167,9 +160,8 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error signing out: ", error);
     }
-  }; // <--- Fixed missing closing bracket here!
+  }; 
 
-  // --- CONDITIONAL RENDERING NOW HAPPENS DOWN HERE SAFELY ---
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
@@ -181,7 +173,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans overflow-hidden relative selection:bg-cyan-500/30">
       
-      {/* Light Trail (Cursor Sized) */}
+      {/* Light Trail */}
       <div 
         className="pointer-events-none fixed top-0 left-0 w-6 h-6 bg-cyan-400/80 rounded-full blur-[6px] transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 ease-out z-50"
         style={{ top: mousePos.y, left: mousePos.x }}
@@ -213,7 +205,6 @@ export default function Dashboard() {
             ))}
           </nav>
 
-          {/* The Logout Button */}
           <button
             onClick={handleLogout}
             className="w-full mt-auto px-4 py-3 rounded-lg text-left text-sm font-medium text-red-400/70 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-all"
@@ -277,32 +268,60 @@ export default function Dashboard() {
                     <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
                     Optimized Pathways ({recommendations.length} Matches)
                   </h3>
+                  
+                  {/* --- OVERHAULED PREMIUM MATCH CARD GRID --- */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {recommendations.map((rec, index) => (
-                      <div key={index} className="group flex flex-col bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden hover:border-cyan-500/30 hover:bg-zinc-800/50 transition-all duration-300">
-                        <div className="h-32 w-full overflow-hidden relative">
-                          <div className="absolute inset-0 bg-zinc-950/40 group-hover:bg-transparent transition-all z-10"></div>
-                          <img src={rec.image} alt={rec.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                          <div className="absolute top-3 right-3 z-20 bg-zinc-950/80 backdrop-blur-sm border border-zinc-700 text-emerald-400 text-xs font-bold px-2 py-1 rounded">
-                            {rec.matchScore} Match
+                    {recommendations.map((rec, index) => {
+                      // Strip percentage sign if it exists in data to use cleanly in formula
+                      const scoreNum = parseInt(rec.matchScore) || 90;
+                      
+                      return (
+                        <div key={index} className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800 hover:border-cyan-500/30 hover:bg-zinc-800/30 transition-all duration-300 flex flex-col justify-between relative group shadow-xl">
+                          <div>
+                            {/* Card Header Row */}
+                            <div className="flex justify-between items-start mb-5">
+                              <div className="flex items-center gap-3">
+                                {/* Gradient Initial Logo Emblem */}
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-black text-lg shadow-inner uppercase">
+                                  {rec.name.charAt(0)}
+                                </div>
+                                <div>
+                                  <h4 className="text-base font-bold text-white tracking-tight group-hover:text-cyan-400 transition-colors line-clamp-1">
+                                    {rec.name}
+                                  </h4>
+                                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider bg-cyan-950/60 border border-cyan-900/50 px-2 py-0.5 rounded">
+                                    {rec.type}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Circular AI Matching Progress Circle */}
+                              <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                  <path className="text-zinc-800" strokeWidth="3px" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                  <path className="text-cyan-500 transition-all duration-500" strokeDasharray={`${scoreNum}, 100`} strokeWidth="3px" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span className="absolute text-[11px] font-black text-zinc-200">{scoreNum}%</span>
+                              </div>
+                            </div>
+
+                            {/* Inside Context Box */}
+                            <div className="bg-zinc-950/60 p-4 rounded-xl border border-zinc-800/80 text-xs text-zinc-400 leading-relaxed mb-4 min-h-[72px]">
+                              {rec.explanation}
+                            </div>
                           </div>
-                        </div>
-                        <div className="p-5 flex-1 flex flex-col">
-                          <span className="text-xs font-bold uppercase tracking-wider text-cyan-500 mb-2 block">{rec.type}</span>
-                          <h4 className="text-lg font-bold text-white mb-3">{rec.name}</h4>
-                          <div className="bg-zinc-950/50 p-3 rounded-lg border-l-2 border-cyan-500 text-sm text-zinc-400 flex-1">
-                            {rec.explanation}
-                          </div>
-                          {/* The Magic Button */}
+
+                          {/* Interactive Connect Blueprint Trigger */}
                           <button 
                             onClick={() => handleAddToGraph(rec)}
-                            className="mt-5 text-sm font-medium text-zinc-400 hover:text-cyan-400 transition-colors w-full text-left flex items-center gap-2"
+                            className="text-xs font-semibold text-zinc-400 hover:text-cyan-400 transition-colors w-full pt-3 border-t border-zinc-800/60 flex items-center justify-between"
                           >
-                            Add to Graph <span>→</span>
+                            <span>Map Into Ecosystem</span>
+                            <span className="transform group-hover:translate-x-1 transition-transform">→</span>
                           </button>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -311,35 +330,48 @@ export default function Dashboard() {
 
           {/* TAB: SME INTAKES */}
           <div className={`p-8 lg:p-12 h-full ${activeTab === 'intakes' ? 'block' : 'hidden'}`}>
-             <div className="animate-in fade-in duration-500 h-full flex flex-col">
-               <h2 className="text-4xl font-bold text-white mb-8">Registered SMEs</h2>
-               
-               <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
-                 <table className="w-full text-left text-sm text-zinc-400">
-                   <thead className="bg-zinc-950 text-xs uppercase text-zinc-500 border-b border-zinc-800">
-                     <tr>
-                       <th className="px-6 py-4 font-semibold">Business Name</th>
-                       <th className="px-6 py-4 font-semibold">Location</th>
-                       <th className="px-6 py-4 font-semibold">Industry</th>
-                       <th className="px-6 py-4 font-semibold">Status</th>
-                     </tr>
-                   </thead>
-                   <tbody>
-                     <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                       <td className="px-6 py-4 font-medium text-white">{initialSME.name}</td>
-                       <td className="px-6 py-4">{initialSME.location}</td>
-                       <td className="px-6 py-4">{initialSME.industry}</td>
-                       <td className="px-6 py-4"><span className="bg-emerald-900/30 text-emerald-400 px-2 py-1 rounded text-xs">Active</span></td>
-                     </tr>
-                     <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                       <td className="px-6 py-4 font-medium text-white">Desa Tech Craft</td>
-                       <td className="px-6 py-4">Pahang</td>
-                       <td className="px-6 py-4">Handicrafts</td>
-                       <td className="px-6 py-4"><span className="bg-zinc-800 text-zinc-400 px-2 py-1 rounded text-xs">Matched</span></td>
-                     </tr>
-                   </tbody>
-                 </table>
+             <div className="animate-in fade-in duration-500 h-full flex flex-col gap-10">
+               <div>
+                 <h2 className="text-4xl font-bold text-white mb-2">SME Onboarding</h2>
+                 <p className="text-zinc-500">Register and manage ecosystems using structured matching profiles.</p>
                </div>
+
+               {/* --- RENDER THE NEW LIGHT MODE INTAKE FORM WIZARD --- */}
+               <div className="theme-light-wrapper">
+                 <StartupIntakeForm />
+               </div>
+               
+               {/* Saved Records Data Ledger */}
+               <div>
+                 <h3 className="text-xl font-bold text-white mb-4">Historical Records</h3>
+                 <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
+                   <table className="w-full text-left text-sm text-zinc-400">
+                     <thead className="bg-zinc-950 text-xs uppercase text-zinc-500 border-b border-zinc-800">
+                       <tr>
+                         <th className="px-6 py-4 font-semibold">Business Name</th>
+                         <th className="px-6 py-4 font-semibold">Location</th>
+                         <th className="px-6 py-4 font-semibold">Industry</th>
+                         <th className="px-6 py-4 font-semibold">Status</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                         <td className="px-6 py-4 font-medium text-white">{initialSME.name}</td>
+                         <td className="px-6 py-4">{initialSME.location}</td>
+                         <td className="px-6 py-4">{initialSME.industry}</td>
+                         <td className="px-6 py-4"><span className="bg-emerald-900/30 text-emerald-400 px-2 py-1 rounded text-xs">Active</span></td>
+                       </tr>
+                       <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                         <td className="px-6 py-4 font-medium text-white">Desa Tech Craft</td>
+                         <td className="px-6 py-4">Pahang</td>
+                         <td className="px-6 py-4">Handicrafts</td>
+                         <td className="px-6 py-4"><span className="bg-zinc-800 text-zinc-400 px-2 py-1 rounded text-xs">Matched</span></td>
+                       </tr>
+                     </tbody>
+                   </table>
+                 </div>
+               </div>
+
              </div>
           </div>
 
@@ -351,7 +383,6 @@ export default function Dashboard() {
                   <p className="text-zinc-400 drop-shadow-md">Drag to pan, scroll to zoom.</p>
                </div>
                
-               {/* React Flow Container */}
                <div className="flex-1 w-full bg-zinc-950 h-screen">
                   <ReactFlow
                     nodes={nodes}
