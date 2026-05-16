@@ -178,10 +178,9 @@ const handleApplyToOpportunity = async (opportunity) => {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
 
         {/* Dynamic Margin spacing offsets content layout so sidebar does not overlap fixed components */}
-        {/* Dynamic Margin spacing offsets content layout so sidebar does not overlap fixed components */}
         <main className="flex-1 h-screen overflow-y-auto custom-scrollbar relative z-10 pl-72 pr-12 py-12">
           
-        {activeTab === 'profile' && (
+          {activeTab === 'profile' && (
             <ProfileView 
               userName={userName} 
               metrics={metrics} 
@@ -190,7 +189,7 @@ const handleApplyToOpportunity = async (opportunity) => {
               onApply={handleApplyToOpportunity} 
               onNavigateToChat={() => setActiveTab('chatbot')}
               onNavigateToOnboarding={() => setActiveTab('ai-matching')}
-              onNavigateToNextStep={() => setActiveTab('launch')} 
+              onNavigateToRoadmap={() => setActiveTab('roadmap')} 
               onNavigateToAnalytics={() => setActiveTab('analytics')}
             />
           )}
@@ -201,36 +200,15 @@ const handleApplyToOpportunity = async (opportunity) => {
             </div>
           )}
 
-          {activeTab === 'chatbot' && <ChatbotView smeProfile={smeProfile} />}
-
-          {/* Note: The old roadmap block is completely deleted from here! */}
-
-          {activeTab === 'launch' && <LaunchStatus activeApplications={activeApplications} />}
-
-          {activeTab === 'analytics' && (
-            <InvestorAnalytics activeApplications={activeApplications} />
-          )}
-
-          {activeTab === 'ai-matching' && (
-            <div className="space-y-6 animate-in fade-in duration-400">
-              <StartupIntakeForm onSubmitSuccess={handleFormSubmissionComplete} />
-            </div>
-          )}
-
-          {/* This is where Chatbot currently sits */}
-          {activeTab === 'chatbot' && <ChatbotView smeProfile={smeProfile} />}
-
-          {/* ADD YOUR NEW TABS RIGHT HERE BELOW CHATBOT */}
-          
           {activeTab === 'roadmap' && (
-            <RoadmapTracker onCompleteRoadmap={() => setActiveTab('launch')} />
+            <RoadmapTracker onCompleteRoadmap={() => setActiveTab('analytics')} />
           )}
-
-          {activeTab === 'launch' && <LaunchStatus activeApplications={activeApplications} />}
 
           {activeTab === 'analytics' && (
             <InvestorAnalytics activeApplications={activeApplications} />
           )}
+
+          {activeTab === 'chatbot' && <ChatbotView smeProfile={smeProfile} />}
 
         </main>
       </div>
