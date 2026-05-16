@@ -1,5 +1,6 @@
 "use client";
-
+import RoadmapTracker from '../components/RoadmapTracker';
+import LaunchStatus from '../components/LaunchStatus';
 import Sidebar from '../components/Sidebar';
 import ProfileView from '../components/ProfileView';
 import ChatbotView from '../components/ChatbotView';
