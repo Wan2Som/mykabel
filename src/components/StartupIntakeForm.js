@@ -1,265 +1,216 @@
 "use client";
 
 import React, { useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db, auth } from '../firebase'; // Adjust import path to match your project structure
 
 export default function StartupIntakeForm({ onSubmitSuccess }) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   
-  // --- FORM STATES ---
+  // Form State Variables
   const [formData, setFormData] = useState({
     startupName: '',
     founderName: '',
-    email: '',
-    sector: 'FinTech',
-    stage: 'Idea Stage',
-    teamSize: '',
-    fundingNeededMin: '',
-    fundingNeededMax: '',
-    lookingFor: []
+    companyEmail: '',
+    companyDescription: '', // 👈 NEW VALUE FOR SCREENSHOT 2
+    industry: 'FinTech',
+    stage: 'Ideation',
+    monthlyBurn: '12000',
+    currentCash: '35000'
   });
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const toggleLookingFor = (item) => {
-    setFormData(prev => {
-      const current = prev.lookingFor;
-      const updated = current.includes(item)
-        ? current.filter(i => i !== item)
-        : [...current, item];
-      return { ...prev, lookingFor: updated };
-    });
+  const handleNext = () => {
+    if (currentStep < 3) setCurrentStep(prev => prev + 1);
   };
 
-  const handleNext = (e) => {
+  const handlePrev = () => {
+    if (currentStep > 1) setCurrentStep(prev => prev - 1);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setCurrentStep(prev => prev + 1);
-  };
+    if (!auth.currentUser) return;
 
-  const handleBack = () => {
-    setCurrentStep(prev => prev - 1);
-  };
+    try {
+      setLoading(true);
+      
+      // Save data securely to Firestore under the authenticated user's profile
+      await setDoc(doc(db, "smes", auth.currentUser.uid), {
+        ...formData,
+        isRegistered: false, // Baseline parameter
+        metrics: { matches: 7, opportunities: 32, connections: 3 },
+        // Pre-populating matches for the demo flow loop
+        recommendations: [
+          { name: "Cradle Fund", type: "Grant Provider", matchScore: "98%", focus: formData.industry, stage: formData.stage, ticketSize: "RM 50K - RM 500K (via programs)", explanation: `Perfect structural alignment with your profile details focusing on early developmental milestone parameters.`, faqUrl: "https://www.cradle.com.my/" },
+          { name: "1337 Ventures", type: "Accelerator / Pre-Seed Investor", matchScore: "95%", focus: formData.industry, stage: formData.stage, ticketSize: "RM 50K - RM 150K (as part of accelerator)", explanation: `Strategic fit: Your targeted product profile plugs an active structural sector deficit in their existing fund portfolio track.`, faqUrl: "https://1337.ventures/" },
+          { name: "MDEC", type: "Government Grants / Agency", matchScore: "90%", focus: formData.industry, stage: formData.stage, ticketSize: "Varies, typically RM 50K-RM 500K for relevant grants", explanation: `Strong candidate matching national digitalization framework deployment tracks for emerging business architectures.`, faqUrl: "https://mdec.my/" }
+        ]
+      }, { merge: true });
 
-  const handleFinalSubmit = () => {
-    // Pass form data back up to the main dashboard container to trigger matchmaking!
-    if (onSubmitSuccess) {
-      onSubmitSuccess(formData);
+      if (onSubmitSuccess) onSubmitSuccess();
+    } catch (err) {
+      console.error("Error saving onboard metrics:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 lg:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+    <div className="max-w-3xl mx-auto bg-slate-900/20 border border-white/5 rounded-3xl p-8 backdrop-blur-xl shadow-2xl animate-in fade-in duration-500">
       
-      {/* STEPPERS TAB INDICATOR */}
-      <div className="flex items-center justify-center gap-4 mb-10 border-b border-slate-800 pb-6">
-        {[
-          { step: 1, label: 'Basic Info' },
-          { step: 2, label: 'Startup Info' },
-          { step: 3, label: 'Review & Match' }
-        ].map((item) => (
-          <div key={item.step} className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-              currentStep === item.step 
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 ring-4 ring-amber-500/10'
-                : currentStep > item.step ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-500'
-            }`}>
-              {currentStep > item.step ? '✓' : item.step}
-            </div>
-            <span className={`text-xs font-bold tracking-wide uppercase ${
-              currentStep === item.step ? 'text-amber-500' : 'text-slate-500'
-            }`}>
-              {item.label}
-            </span>
-            {item.step < 3 && <div className="w-8 h-[2px] bg-slate-800 mx-1" />}
-          </div>
-        ))}
+      {/* Wizard Progress Steps Bar Header */}
+      <div className="flex items-center justify-center gap-8 mb-10 border-b border-white/5 pb-6 text-xs font-bold uppercase tracking-wider">
+        <div className={`flex items-center gap-2 ${currentStep === 1 ? 'text-amber-500' : 'text-slate-500'}`}>
+          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${currentStep === 1 ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>1</span>
+          <span>Basic Info</span>
+        </div>
+        <div className="w-12 h-0.5 bg-slate-800" />
+        <div className={`flex items-center gap-2 ${currentStep === 2 ? 'text-amber-500' : 'text-slate-500'}`}>
+          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${currentStep === 2 ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>2</span>
+          <span>Startup Info</span>
+        </div>
+        <div className="w-12 h-0.5 bg-slate-800" />
+        <div className={`flex items-center gap-2 ${currentStep === 3 ? 'text-amber-500' : 'text-slate-500'}`}>
+          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${currentStep === 3 ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>3</span>
+          <span>Review & Match</span>
+        </div>
       </div>
 
-      {/* --- STEP 1: BASIC INFO --- */}
-      {currentStep === 1 && (
-        <form onSubmit={handleNext} className="space-y-6 animate-in fade-in duration-300">
-          <div>
-            <h3 className="text-2xl font-black text-white tracking-tight mb-2">Basic Info</h3>
-            <p className="text-sm text-slate-400">Introduce your startup profile identifier variables.</p>
-          </div>
-          
-          <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* STEP 1: BASIC INFO BLOCK */}
+        {currentStep === 1 && (
+          <div className="space-y-6 animate-in fade-in duration-300">
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Startup Name</label>
-              <input type="text" value={formData.startupName} onChange={(e) => handleInputChange('startupName', e.target.value)} required
-                className="block w-full bg-[#0F172A]/80 px-4 py-3.5 border border-slate-700 rounded-xl text-white sm:text-sm outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder-slate-600"
-                placeholder="e.g., Ahmad Frozen Foods" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Founder Name</label>
-              <input type="text" value={formData.founderName} onChange={(e) => handleInputChange('founderName', e.target.value)} required
-                className="block w-full bg-[#0F172A]/80 px-4 py-3.5 border border-slate-700 rounded-xl text-white sm:text-sm outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder-slate-600"
-                placeholder="e.g., Ahmad Bin Ibrahim" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Company Email</label>
-              <input type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} required
-                className="block w-full bg-[#0F172A]/80 px-4 py-3.5 border border-slate-700 rounded-xl text-white sm:text-sm outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder-slate-600"
-                placeholder="founder@startup.com.my" />
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-4">
-            <button type="submit" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95">
-              Next Step →
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* --- STEP 2: STARTUP INFORMATION --- */}
-      {currentStep === 2 && (
-        <form onSubmit={handleNext} className="space-y-6 animate-in fade-in duration-300">
-          <div>
-            <h3 className="text-2xl font-black text-white tracking-tight mb-2">Startup Information</h3>
-            <p className="text-sm text-slate-400">Provide quantitative details about your business operation limits.</p>
-          </div>
-
-          <div className="space-y-5">
-            {/* Sector Selector */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Sector</label>
-              <div className="flex flex-wrap gap-2">
-                {['FinTech', 'AgriTech', 'EdTech', 'E-Commerce', 'SaaS'].map((sec) => (
-                  <button type="button" key={sec} onClick={() => handleInputChange('sector', sec)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      formData.sector === sec 
-                        ? 'bg-amber-500 border-amber-500 text-slate-950 shadow-md shadow-amber-500/20' 
-                        : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
-                    }`}>
-                    {sec}
-                  </button>
-                ))}
-              </div>
+              <h3 className="text-xl font-black text-white tracking-tight mb-1">Basic Info</h3>
+              <p className="text-xs text-slate-500">Introduce your startup profile identifier variables.</p>
             </div>
 
-            {/* Stage Selector */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Startup Stage</label>
-              <div className="flex flex-wrap gap-2">
-                {['Idea Stage', 'MVP', 'Early Revenue', 'Scaling'].map((stg) => (
-                  <button type="button" key={stg} onClick={() => handleInputChange('stage', stg)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      formData.stage === stg 
-                        ? 'bg-amber-500 border-amber-500 text-slate-950 shadow-md shadow-amber-500/20' 
-                        : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
-                    }`}>
-                    {stg}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Team Size */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Team Size</label>
-              <input type="number" value={formData.teamSize} onChange={(e) => handleInputChange('teamSize', e.target.value)} required
-                className="block w-full bg-[#0F172A]/80 px-4 py-3.5 border border-slate-700 rounded-xl text-white sm:text-sm outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder-slate-600"
-                placeholder="e.g., 5" />
-            </div>
-
-            {/* Funding Windows */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Funding Needed (RM)</label>
-              <div className="flex items-center gap-3">
-                <input type="number" value={formData.fundingNeededMin} onChange={(e) => handleInputChange('fundingNeededMin', e.target.value)} required
-                  className="block w-full bg-[#0F172A]/80 px-4 py-3.5 border border-slate-700 rounded-xl text-white sm:text-sm outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder-slate-600"
-                  placeholder="Min K (e.g., 10)" />
-                <span className="text-slate-500 text-sm font-bold">to</span>
-                <input type="number" value={formData.fundingNeededMax} onChange={(e) => handleInputChange('fundingNeededMax', e.target.value)} required
-                  className="block w-full bg-[#0F172A]/80 px-4 py-3.5 border border-slate-700 rounded-xl text-white sm:text-sm outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder-slate-600"
-                  placeholder="Max K (e.g., 50)" />
-              </div>
-            </div>
-
-            {/* Looking For */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Looking For</label>
-              <div className="grid grid-cols-2 gap-2">
-                {['Investor', 'Mentor', 'Government Grants', 'Strategic Partnerships'].map((target) => {
-                  const isChecked = formData.lookingFor.includes(target);
-                  return (
-                    <button type="button" key={target} onClick={() => toggleLookingFor(target)}
-                      className={`px-4 py-3 rounded-xl text-xs font-bold border text-left flex items-center justify-between transition-all ${
-                        isChecked 
-                          ? 'bg-amber-500/10 border-amber-500 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.05)]' 
-                          : 'bg-slate-800/30 border-slate-700 text-slate-400 hover:border-slate-600'
-                      }`}>
-                      <span>{target}</span>
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
-                        isChecked ? 'border-amber-400 bg-amber-500 text-slate-950' : 'border-slate-600'
-                      }`}>
-                        {isChecked && '✓'}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-between pt-4 border-t border-slate-800/60">
-            <button type="button" onClick={handleBack} className="border border-slate-700 hover:border-slate-500 hover:text-white font-bold py-3.5 px-6 rounded-xl transition-all">
-              ← Back
-            </button>
-            <button type="submit" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95">
-              Next Step →
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* --- STEP 3: REVIEW YOUR INFORMATION --- */}
-      {currentStep === 3 && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          <div>
-            <h3 className="text-2xl font-black text-white tracking-tight mb-2">Review Your Information</h3>
-            <p className="text-sm text-slate-400">Verify structured telemetry before linking down into the AI matchmaking grid arrays.</p>
-          </div>
-
-          <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 space-y-4 text-sm text-slate-300 shadow-inner">
-            <div className="grid grid-cols-2 gap-4 border-b border-slate-900 pb-3">
-              <div><span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Startup Identity</span> <strong className="text-white text-base">{formData.startupName || 'Not Specifed'}</strong></div>
-              <div><span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Operational Founder</span> <span className="text-slate-200 font-medium">{formData.founderName}</span></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 border-b border-slate-900 pb-3">
-              <div><span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Contact Node Email</span> <span className="text-slate-300 font-mono">{formData.email}</span></div>
-              <div><span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Sector Matrix</span> <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-bold rounded">{formData.sector}</span></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 border-b border-slate-900 pb-3">
-              <div><span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Current Phase</span> <span className="text-slate-200 font-medium">{formData.stage}</span></div>
-              <div><span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Personnel Capacity</span> <span className="text-slate-200 font-medium">{formData.teamSize} active members</span></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 border-b border-slate-900 pb-3">
-              <div><span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Target Ticket Size</span> <span className="text-emerald-400 font-bold">RM {formData.fundingNeededMin}K – RM {formData.fundingNeededMax}K</span></div>
+            <div className="space-y-4">
               <div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1">Target Pathways</span> 
-                <div className="flex flex-wrap gap-1">
-                  {formData.lookingFor.length > 0 ? formData.lookingFor.map(item => (
-                    <span key={item} className="text-[10px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded">{item}</span>
-                  )) : <span className="text-xs text-slate-600 italic">No ecosystem targets designated</span>}
-                </div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Startup Name</label>
+                <input type="text" name="startupName" value={formData.startupName} onChange={handleChange} required placeholder="e.g., Ahmad Frozen Foods"
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-4 focus:border-amber-500 focus:outline-none placeholder-slate-700 text-sm transition-colors" />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Founder Name</label>
+                <input type="text" name="founderName" value={formData.founderName} onChange={handleChange} required placeholder="e.g., Ahmad Bin Ibrahim"
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-4 focus:border-amber-500 focus:outline-none placeholder-slate-700 text-sm transition-colors" />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Company Email</label>
+                <input type="email" name="companyEmail" value={formData.companyEmail} onChange={handleChange} required placeholder="founder@startup.com.my"
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-4 focus:border-amber-500 focus:outline-none placeholder-slate-700 text-sm transition-colors" />
+              </div>
+
+              {/* 👇 NEW DETAILED DESCRIPTION TEXTAREA LAYER 👇 */}
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Company Description</label>
+                <textarea name="companyDescription" value={formData.companyDescription} onChange={handleChange} required rows={4} 
+                  placeholder="e.g., A peer-to-peer micro-lending platform tailored for rural micro-entrepreneurs in Northern Malaysia, utilizing alternative credit scoring structures..."
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-4 focus:border-amber-500 focus:outline-none placeholder-slate-700 text-sm transition-colors custom-scrollbar resize-none leading-relaxed" />
+                <span className="text-[10px] text-slate-500 mt-1.5 block leading-normal">
+                  Provide detailed operational parameters. This input is directly parsed by the AI processing loop to pinpoint highly specified, niche ecosystem investors and customize your live market news stream.
+                </span>
               </div>
             </div>
           </div>
+        )}
 
-          <div className="flex justify-between pt-4 border-t border-slate-800/60">
-            <button type="button" onClick={handleBack} className="border border-slate-700 hover:border-slate-500 hover:text-white font-bold py-3.5 px-6 rounded-xl transition-all">
+        {/* STEP 2: STARTUP PARAMETERS */}
+        {currentStep === 2 && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div>
+              <h3 className="text-xl font-black text-white tracking-tight mb-1">Financial & Vertical Footprint</h3>
+              <p className="text-xs text-slate-500">Configure operational thresholds for your matrix calculation pipelines.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Industry Vertical</label>
+                <select name="industry" value={formData.industry} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-4 focus:border-amber-500 focus:outline-none text-sm cursor-pointer">
+                  <option value="FinTech">FinTech</option>
+                  <option value="AgriTech">AgriTech</option>
+                  <option value="E-Commerce">E-Commerce</option>
+                  <option value="HealthTech">HealthTech</option>
+                  <option value="B2B Enterprise SaaS">B2B Enterprise SaaS</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Current Growth Stage</label>
+                <select name="stage" value={formData.stage} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-4 focus:border-amber-500 focus:outline-none text-sm cursor-pointer">
+                  <option value="Ideation">Ideation / MVP Concept</option>
+                  <option value="Pre-Seed">Pre-Seed / Prototype Ready</option>
+                  <option value="Seed">Seed Stage / Scaling Revenue</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Current Cash Reserves (RM)</label>
+                <input type="number" name="currentCash" value={formData.currentCash} onChange={handleChange} required
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-4 focus:border-amber-500 focus:outline-none text-sm" />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Monthly Operational Burn (RM)</label>
+                <input type="number" name="monthlyBurn" value={formData.monthlyBurn} onChange={handleChange} required
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-4 focus:border-amber-500 focus:outline-none text-sm" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: DATA VERIFICATION REVIEW */}
+        {currentStep === 3 && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div>
+              <h3 className="text-xl font-black text-white tracking-tight mb-1">Confirm System Onboarding</h3>
+              <p className="text-xs text-slate-500">Verify your telemetry configuration metrics before launching the neural match vectors.</p>
+            </div>
+
+            <div className="bg-slate-950/50 border border-white/5 rounded-2xl p-6 text-xs space-y-3 font-medium text-slate-400">
+              <div><span className="text-slate-500 font-bold uppercase tracking-wider inline-block w-36">Venture:</span> <span className="text-white">{formData.startupName}</span></div>
+              <div><span className="text-slate-500 font-bold uppercase tracking-wider inline-block w-36">Vertical Core:</span> <span className="text-white">{formData.industry}</span></div>
+              <div><span className="text-slate-500 font-bold uppercase tracking-wider inline-block w-36">Current Growth:</span> <span className="text-white">{formData.stage}</span></div>
+              <div><span className="text-slate-500 font-bold uppercase tracking-wider inline-block w-36">Cash Baseline:</span> <span className="text-emerald-400">RM {Number(formData.currentCash).toLocaleString()}</span></div>
+              <div><span className="text-slate-500 font-bold uppercase tracking-wider inline-block w-36">Burn Rate Focus:</span> <span className="text-red-400">RM {Number(formData.monthlyBurn).toLocaleString()} / month</span></div>
+              <div className="pt-2 border-t border-slate-800/80 leading-relaxed">
+                <span className="text-slate-500 font-bold uppercase tracking-wider block mb-1">Description Sync:</span>
+                <p className="text-slate-300 italic">"{formData.companyDescription}"</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CONTROLS FOOTER BLOCK */}
+        <div className="flex justify-between items-center pt-6 border-t border-white/5">
+          {currentStep > 1 ? (
+            <button type="button" onClick={handlePrev} className="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors px-4 py-2">
               ← Back
             </button>
-            <button type="button" onClick={handleFinalSubmit} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-3.5 px-10 rounded-xl transition-all shadow-lg shadow-orange-500/20 active:scale-95">
-              Link Ecosystem →
-            </button>
-          </div>
-        </div>
-      )}
+          ) : <div />}
 
+          {currentStep < 3 ? (
+            <button type="button" onClick={handleNext} className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-8 py-3 rounded-xl text-xs tracking-wider uppercase shadow-lg shadow-amber-500/10 transition-all">
+              Next Step →
+            </button>
+          ) : (
+            <button type="submit" disabled={loading} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black px-10 py-3.5 rounded-xl text-xs tracking-widest uppercase shadow-xl transition-all disabled:opacity-50">
+              {loading ? 'Initializing Channels...' : 'Execute AI Matching 🚀'}
+            </button>
+          )}
+        </div>
+
+      </form>
     </div>
   );
 }
