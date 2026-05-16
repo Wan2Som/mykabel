@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function ProfileView({ userName, metrics, recommendations, onNavigateToChat, onNavigateToOnboarding }) {
+export default function ProfileView({ userName, metrics, recommendations, smeProfile, onApply, onNavigateToChat, onNavigateToOnboarding, onNavigateToNextStep }) {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -82,12 +82,13 @@ export default function ProfileView({ userName, metrics, recommendations, onNavi
                       className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center py-2.5 rounded-xl text-xs tracking-wide shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-1"
                     >
                       <span>Apply Now Portal</span> ↗
-                    </a>
-                    <a href={rec.faqUrl || "#"} target="_blank" rel="noopener noreferrer"
-                      className="w-full text-center text-[11px] font-bold text-slate-500 hover:text-slate-300 transition-colors py-1"
+                   <button 
+                      onClick={() => onApply(rec)}
+                      className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center py-2.5 rounded-xl text-xs tracking-wide shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-2"
                     >
-                      Read Institutional Guidelines & FAQ
-                    </a>
+                      <span>Add to Launch Board</span>
+                      <span>+</span>
+                    </button>
                   </div>
                 </div>
               );
@@ -102,6 +103,24 @@ export default function ProfileView({ userName, metrics, recommendations, onNavi
           </div>
         )}
       </div>
+          {/* Massive Redirect Button to Roadmap / Launch Status */}
+        {recommendations.length > 0 && (
+          <div className="mt-16 p-8 bg-slate-900/40 border border-amber-500/30 rounded-3xl text-center shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5 group-hover:opacity-100 transition-opacity" />
+            <h3 className="text-2xl font-black text-white mb-2 relative z-10">Ready to take action?</h3>
+            <p className="text-sm text-slate-400 mb-6 relative z-10">
+              {smeProfile?.isRegistered 
+                ? "Your business is registered. Track your selected matches on the Launch Board." 
+                : "Complete your legal frameworks to unlock official portal applications."}
+            </p>
+            <button 
+              onClick={onNavigateToNextStep} 
+              className="relative z-10 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-10 py-4 rounded-2xl text-base tracking-widest uppercase shadow-[0_0_40px_rgba(245,158,11,0.2)] transition-all transform hover:scale-105"
+            >
+              {smeProfile?.isRegistered ? 'Go to Launch Status Board 🚀' : 'Proceed to Pre-Flight Roadmap 📋'}
+            </button>
+          </div>
+        )}
     </div>
   );
 }
