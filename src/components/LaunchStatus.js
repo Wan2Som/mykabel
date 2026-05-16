@@ -13,7 +13,7 @@ export default function LaunchStatus({ activeApplications = [] }) {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 h-full flex flex-col pt-4">
       <header>
-        <h2 className="text-3xl font-black text-white tracking-tight mb-1">Launch Status Board 🎯</h2>
+       <h2 className="text-3xl font-black text-white tracking-tight mb-1">Progress Tracker Board 🎯</h2>
         <p className="text-sm text-slate-500 font-medium">Track your active venture and grant applications in real-time.</p>
       </header>
 
