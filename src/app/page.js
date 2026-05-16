@@ -22,15 +22,11 @@ function useMousePosition() {
 }
 
 // --- MOCK DATABASE (Replaces Firebase for the demo) ---
-const initialSME = {
-  id: "sme-1",
-  name: "Warisan Snack Co.",
-  location: "Kelantan",
-  industry: "Traditional Food",
-  goal: "E-commerce expansion & Halal Export",
-  dateAdded: "2026-05-16",
-  status: "Active"
-};
+<input 
+  type="text" 
+  placeholder="Enter your prompt here..." 
+  className="border p-2 rounded w-full"
+/>
 
 export default function Dashboard() {
   const router = useRouter();
