@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function ProfileView({ userName, metrics, recommendations, smeProfile, onApply, onNavigateToChat, onNavigateToOnboarding, onNavigateToNextStep }) {
+export default function ProfileView({ userName, metrics, recommendations, smeProfile, onApply, onNavigateToChat, onNavigateToOnboarding, onNavigateToNextStep, onNavigateToAnalytics }) {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -105,26 +105,29 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
           </div>
         )}
 
-        {/* Massive Redirect Button to Roadmap / Launch Status */}
+        {/* Massive Redirect Button to Launch Status / Analytics */}
         {recommendations.length > 0 && (
           <div className="mt-16 p-8 bg-slate-900/40 border border-amber-500/30 rounded-3xl text-center shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5 group-hover:opacity-100 transition-opacity" />
             <h3 className="text-2xl font-black text-white mb-2 relative z-10">Ready to take action?</h3>
             <p className="text-sm text-slate-400 mb-6 relative z-10">
-              {smeProfile?.isRegistered 
-                ? "Your business is registered. Track your selected matches on the Launch Board." 
-                : "Complete your legal frameworks to unlock official portal applications."}
+              Track your selected matches on the Launch Board, or run our AI model to predict your exact acceptance odds.
             </p>
-            <button 
-              onClick={onNavigateToNextStep} 
-              className="relative z-10 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-10 py-4 rounded-2xl text-base tracking-widest uppercase shadow-[0_0_40px_rgba(245,158,11,0.2)] transition-all transform hover:scale-105"
-            >
-              {smeProfile?.isRegistered ? 'Go to Launch Status Board 🚀' : 'Proceed to Pre-Flight Roadmap 📋'}
-            </button>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
+              <button 
+                onClick={onNavigateToNextStep} 
+                className="bg-slate-800 hover:bg-slate-700 text-white font-black px-8 py-4 rounded-2xl text-sm tracking-widest uppercase transition-all"
+              >
+                View Launch Board 🚀
+              </button>
+              <button 
+                onClick={onNavigateToAnalytics} 
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-8 py-4 rounded-2xl text-sm tracking-widest uppercase shadow-[0_0_40px_rgba(245,158,11,0.2)] transition-all transform hover:scale-105"
+              >
+                Predict Approval Odds 🔮
+              </button>
+            </div>
           </div>
         )}
-
-      </div>
-    </div>
   );
 }
