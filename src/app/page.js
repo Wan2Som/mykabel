@@ -5,7 +5,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from './lib/firebaseConfig';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
 
 // --- CUSTOM HOOK: Glow Cursor Trail ---
 function useMousePosition() {
@@ -26,31 +26,62 @@ export default function Dashboard() {
   
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile'); 
+  const [userName, setUserName] = useState('Founder'); // Dynamic display name state variable
   
   const [metrics, setMetrics] = useState({ matches: 0, opportunities: 0, connections: 0 });
   const [recommendations, setRecommendations] = useState([]);
 
-  // Firebase Auth Check
+  // Firebase Auth Check & Session State Recovery
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.push('/login');
       } else {
+        // Fallback name prioritizing Google Auth Display Names or Email prefixes
+        let nameToSet = user.displayName || user.email.split('@')[0] || 'Founder';
+        
+        try {
+          // Query Firestore using the unique User ID as the document locator anchor
+          const docRef = doc(db, "smes", user.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            // Re-hydrate the dashboard states from the saved database profile cache
+            setMetrics(data.metrics || { matches: 24, opportunities: 19, connections: 4 });
+            setRecommendations(data.recommendations || []);
+            
+            if (data.founderName) {
+              nameToSet = data.founderName;
+            }
+            setActiveTab('profile'); // Profile data exists, send directly to dashboard view
+          } else {
+            setActiveTab('ai-matching'); // No profile data exists, route directly to setup wizard
+          }
+        } catch (error) {
+          console.error("Error loading user ecosystem profile state:", error);
+          setActiveTab('ai-matching');
+        }
+        
+        setUserName(nameToSet);
         setLoading(false);
       }
     });
     return () => unsubscribe();
   }, [router]);
 
+  // --- TRIGGER ACTION SEQUENCE ON FORM INTENT COMPLETE ---
   const handleFormSubmissionComplete = async (submittedData) => {
     setLoading(true);
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Session expired. Please authenticate again.");
+      router.push('/login');
+      return;
+    }
     
     try {
-      await addDoc(collection(db, "smes"), {
-        ...submittedData,
-        createdAt: new Date()
-      });
-
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,13 +95,26 @@ export default function Dashboard() {
 
       const aiData = await response.json();
 
-      setMetrics({
+      const newMetrics = {
         matches: aiData.matchesCount || 24,
         opportunities: aiData.opportunitiesCount || 19,
         connections: aiData.connectionsCount || 4
+      };
+      const newRecs = aiData.recommendations || [];
+
+      // Write data directly using the user's secure UID as the absolute document ID map path
+      await setDoc(doc(db, "smes", user.uid), {
+        ...submittedData,
+        metrics: newMetrics,
+        recommendations: newRecs,
+        userId: user.uid,
+        createdAt: new Date()
       });
-      
-      setRecommendations(aiData.recommendations || []);
+
+      // Update runtime environment variables
+      setMetrics(newMetrics);
+      setRecommendations(newRecs);
+      setUserName(submittedData.founderName || user.displayName || user.email.split('@')[0]);
       setActiveTab('profile');
 
     } catch (e) {
@@ -152,7 +196,8 @@ export default function Dashboard() {
           {activeTab === 'profile' && (
             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <header>
-                <h2 className="text-3xl font-black text-white tracking-tight mb-1">Welcome back, SME FOUNDER 👋</h2>
+                {/* Fixed Dynamic Welcome Header */}
+                <h2 className="text-3xl font-black text-white tracking-tight mb-1">Welcome back, {userName} 👋</h2>
                 <p className="text-sm text-slate-500 font-medium">Real-time status analysis telemetry loops.</p>
               </header>
 
@@ -211,7 +256,6 @@ export default function Dashboard() {
                             <p className="text-xs text-slate-500 leading-relaxed min-h-[36px] mb-4">{rec.explanation}</p>
                           </div>
 
-                          {/* ACTION BUTTON WRAPPERS LINKED TO LIVE GATEWAYS */}
                           <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-2.5">
                             <a 
                               href={rec.portalUrl} 
