@@ -129,5 +129,8 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
             </div>
           </div>
         )}
+
+      </div>
+    </div>
   );
 }
