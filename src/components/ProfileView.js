@@ -40,7 +40,7 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
           AI Recommended Matches
         </h3>
 
-        {recommendations.length > 0 ? (
+        {recommendations && recommendations.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {recommendations.map((rec, index) => {
               const scoreInt = parseInt(rec.matchScore) || 90;
@@ -50,11 +50,11 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-slate-950 font-black text-lg shadow-inner">
-                          {rec.name.charAt(0)}
+                          {rec.name ? rec.name.charAt(0) : 'M'}
                         </div>
                         <div>
-                          <h4 className="font-bold text-white text-base tracking-tight line-clamp-1">{rec.name}</h4>
-                          <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded uppercase tracking-wider">{rec.type}</span>
+                          <h4 className="font-bold text-white text-base tracking-tight line-clamp-1">{rec.name || 'Match'}</h4>
+                          <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded uppercase tracking-wider">{rec.type || 'Investor'}</span>
                         </div>
                       </div>
 
@@ -68,17 +68,17 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
                     </div>
 
                     <div className="space-y-1.5 text-xs text-slate-400 mb-4 border-t border-b border-slate-800/50 py-3 my-3">
-                      <div><span className="font-bold text-slate-500 inline-block w-24">Sector Focus:</span> {rec.focus}</div>
-                      <div><span className="font-bold text-slate-500 inline-block w-24">Stage Criteria:</span> {rec.stage}</div>
-                      <div><span className="font-bold text-slate-500 inline-block w-24">Ticket Limits:</span> <span className="text-emerald-400 font-semibold">{rec.ticketSize}</span></div>
+                      <div><span className="font-bold text-slate-500 inline-block w-24">Sector Focus:</span> {rec.focus || 'N/A'}</div>
+                      <div><span className="font-bold text-slate-500 inline-block w-24">Stage Criteria:</span> {rec.stage || 'N/A'}</div>
+                      <div><span className="font-bold text-slate-500 inline-block w-24">Ticket Limits:</span> <span className="text-emerald-400 font-semibold">{rec.ticketSize || 'N/A'}</span></div>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed min-h-[36px] mb-4">{rec.explanation}</p>
+                    <p className="text-xs text-slate-500 leading-relaxed min-h-[36px] mb-4">{rec.explanation || 'No description provided.'}</p>
                   </div>
 
                   <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-2.5">
                     <button 
-                      onClick={() => onApply(rec)}
+                      onClick={() => onApply && onApply(rec)}
                       className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-center py-2.5 rounded-xl text-xs tracking-wide shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-2"
                     >
                       <span>Save & Predict Odds</span>
@@ -104,7 +104,7 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
         )}
 
         {/* Action Redirect Block */}
-        {recommendations.length > 0 && (
+        {recommendations && recommendations.length > 0 && (
           <div className="mt-16 p-8 bg-slate-900/40 border border-amber-500/30 rounded-3xl text-center shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5 group-hover:opacity-100 transition-opacity" />
             <h3 className="text-2xl font-black text-white mb-2 relative z-10">Ready to take action?</h3>
