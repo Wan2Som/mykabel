@@ -31,7 +31,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('profile'); 
   const [userName, setUserName] = useState('Founder'); 
   const [smeProfile, setSmeProfile] = useState(null);
-  
+  const [activeApplications, setActiveApplications] = useState([]);
   const [metrics, setMetrics] = useState({ matches: 0, opportunities: 0, connections: 0 });
   const [recommendations, setRecommendations] = useState([]);
 
@@ -118,7 +118,36 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+const handleApplyToOpportunity = async (opportunity) => {
+    // 1. Prevent adding the exact same company twice
+    if (activeApplications.find(app => app.name === opportunity.name)) {
+      setActiveTab(smeProfile?.isRegistered ? 'launch' : 'roadmap');
+      return;
+    }
 
+    // 2. Format the data for the Kanban board
+    const newApp = {
+      id: Date.now().toString(),
+      name: opportunity.name,
+      type: opportunity.type || 'Opportunity',
+      status: 'prep', 
+      amount: opportunity.ticketSize || 'TBD',
+      portalUrl: opportunity.portalUrl
+    };
+
+    const updatedApps = [...activeApplications, newApp];
+    setActiveApplications(updatedApps);
+
+    // 3. Save it to Firebase so it remembers on refresh
+    if (auth.currentUser) {
+      await setDoc(doc(db, "smes", auth.currentUser.uid), {
+        activeApplications: updatedApps
+      }, { merge: true }); // Merge ensures we don't overwrite their profile
+    }
+
+    // 4. Auto-route them to the next logical step
+    setActiveTab(smeProfile?.isRegistered ? 'launch' : 'roadmap');
+  };
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -151,13 +180,16 @@ export default function Dashboard() {
         {/* Dynamic Margin spacing offsets content layout so sidebar does not overlap fixed components */}
         <main className="flex-1 h-screen overflow-y-auto custom-scrollbar relative z-10 pl-72 pr-12 py-12">
           
-          {activeTab === 'profile' && (
+        {activeTab === 'profile' && (
             <ProfileView 
               userName={userName} 
               metrics={metrics} 
               recommendations={recommendations} 
+              smeProfile={smeProfile} 
+              onApply={handleApplyToOpportunity} 
               onNavigateToChat={() => setActiveTab('chatbot')}
               onNavigateToOnboarding={() => setActiveTab('ai-matching')}
+              onNavigateToNextStep={() => setActiveTab(smeProfile?.isRegistered ? 'launch' : 'roadmap')} 
             />
           )}
 
