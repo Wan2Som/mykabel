@@ -61,11 +61,12 @@ export default function LoginPage() {
         .btn-accent:hover { box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4); transform: translateY(-2px); }
       `}} />
 
-      {/* Dynamic Cursor Light Trail */}
+      {/* Dynamic Cursor Light Trail (Cursor Sized) */}
       <div 
-        className="pointer-events-none fixed w-[200px] h-[200px] rounded-full z-0 transition-transform duration-75"
+        className="pointer-events-none fixed w-6 h-6 rounded-full z-50 transition-transform duration-75"
         style={{ 
-          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, rgba(245, 158, 11, 0.15) 40%, rgba(0, 0, 0, 0) 70%)',
+          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.9) 0%, rgba(245, 158, 11, 0.4) 50%, rgba(0, 0, 0, 0) 100%)',
+          boxShadow: '0 0 12px 2px rgba(245, 158, 11, 0.5)',
           top: mousePos.y, left: mousePos.x, transform: 'translate(-50%, -50%)'
         }}
       />
