@@ -16,12 +16,18 @@ export async function POST(request) {
       - Seeking Channels: ${lookingFor.join(', ')}
 
       Based on this data, generate exactly 7 highly relevant, unique, and realistic entities in the Malaysian venture/SME ecosystem. 
-      Mix them across appropriate categories based on what the user is looking for. Choose from prominent ecosystem players such as:
-      Gobi Partners, Cradle Fund, Artem Ventures, NEXEA, Sunway iLabs, MTDC, MRANTI, pitchIN, 1337 Ventures, ScaleUp Malaysia, MDEC grants, WatchTower and Friends, Alpha Startups, or relevant Malaysian corporate VC arms.
+      Mix them across appropriate categories (choose from Gobi Partners, Cradle Fund, Artem Ventures, NEXEA, Sunway iLabs, MTDC, MRANTI, pitchIN, 1337 Ventures, ScaleUp Malaysia, or MDEC grants).
 
-      CRITICAL FOR LATENCY: Keep the "explanation" for each match extremely concise (under 25 words max) so the response generates instantly without timing out the server.
+      CRITICAL: For each matched entity, you must provide accurate URL strings corresponding to their live registration portals and informational FAQ pages. Use these exact domain routes where applicable:
+      - Cradle Fund: portalUrl "https://cradle.com.my/cip-spark/" | faqUrl "https://cradle.com.my/cip-spark/"
+      - 1337 Ventures: portalUrl "https://1337.ventures/" | faqUrl "https://1337.ventures/10-questions-vcs-will-ask-and-how-to-answer-them-1337-ventures/"
+      - pitchIN: portalUrl "https://www.pitchin.my/" | faqUrl "https://www.pitchin.my/equity-crowdfunding"
+      - MDEC: portalUrl "https://www.mdec.my/malaysiadigital/apply" | faqUrl "https://www.mdec.my/grants"
+      - NEXEA: portalUrl "https://www.nexea.co/incubator-venture-builder/" | faqUrl "https://mystartupaccelerator.org/faqs/"
+      - Sunway iLabs: portalUrl "https://innovationlabs.sunway.edu.my/accelerator/" | faqUrl "https://innovationlabs.sunway.edu.my/why-join-sunway-ilabs-super-accelerator/"
+      - For others, provide their authentic corporate domain application links.
 
-      Return ONLY a raw, valid JSON object matching the schema below. Do not wrap it in markdown code blocks.
+      Keep the "explanation" for each match extremely concise (under 25 words max) so the response generates instantly. Do not wrap it in markdown blocks.
 
       Required JSON Response Schema Format:
       {
@@ -31,12 +37,14 @@ export async function POST(request) {
         "recommendations": [
           {
             "name": "Name of Entity",
-            "type": "Investor" or "Mentor" or "Government Grants" or "Strategic Partnerships",
+            "type": "Investor",
             "matchScore": "95%",
             "focus": "Keywords of what they focus on",
             "stage": "Stages they support",
             "ticketSize": "Funding ranges or capital metrics they deploy",
-            "explanation": "Snappy 1-sentence explanation matching their specific criteria."
+            "explanation": "Snappy 1-sentence explanation matching their specific criteria.",
+            "portalUrl": "https://example.com/apply",
+            "faqUrl": "https://example.com/faq"
           }
         ]
       }
@@ -54,9 +62,7 @@ export async function POST(request) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseMimeType: "application/json"
-          }
+          generationConfig: { responseMimeType: "application/json" }
         }),
       }
     );
