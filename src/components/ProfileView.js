@@ -10,7 +10,6 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
           <h2 className="text-3xl font-black text-white tracking-tight mb-1">Welcome back, {userName} 👋</h2>
           <p className="text-sm text-slate-500 font-medium">Real-time status analysis telemetry loops.</p>
         </div>
-        {/* Prominent Shortcut Call-to-action button to jump straight to Chatbot */}
         <button 
           onClick={onNavigateToChat}
           className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 text-amber-400 font-bold px-5 py-3 rounded-xl text-xs tracking-wide hover:border-amber-400 hover:text-white transition-all shadow-lg flex items-center justify-center gap-2 group self-start sm:self-center"
@@ -77,7 +76,6 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
                     <p className="text-xs text-slate-500 leading-relaxed min-h-[36px] mb-4">{rec.explanation}</p>
                   </div>
 
-                  {/* ACTION BUTTON WRAPPERS LINKED TO LIVE GATEWAYS */}
                   <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-2.5">
                     <button 
                       onClick={() => onApply(rec)}
@@ -105,7 +103,7 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
           </div>
         )}
 
-        {/* Massive Redirect Button to Roadmap / Analytics */}
+        {/* Action Redirect Block */}
         {recommendations.length > 0 && (
           <div className="mt-16 p-8 bg-slate-900/40 border border-amber-500/30 rounded-3xl text-center shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5 group-hover:opacity-100 transition-opacity" />
@@ -129,7 +127,6 @@ export default function ProfileView({ userName, metrics, recommendations, smePro
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
