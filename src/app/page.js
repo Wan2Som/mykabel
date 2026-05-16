@@ -191,7 +191,7 @@ export default function Dashboard() {
         {/* Sidebar */}
         <aside className="w-64 bg-zinc-900/50 backdrop-blur-xl border-r border-zinc-800/50 p-6 flex flex-col z-20">
           <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-10 tracking-tight">
-            DesaLink AI
+            MyKabel
           </h1>
           <nav className="space-y-2 flex-1">
             {[
